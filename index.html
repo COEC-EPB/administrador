@@ -1,34 +1,40 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel do Administrador - ADD</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrapript src="https://cdn.sheetjs.com/xlsx-latest/packagell.min.js</script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
 <style>
     body { background: #f8f9fa; }
     .container { max-width: 1200px; margin-top: 40px; }
-    h2 { display: flex; align-items: gap: 10px; }
+    h2 { display: flex; align-items: center; gap: 10px; }
     h2::before { content: "📊"; font-size: 1.5rem; }
     .table-container { max-height: 500px; overflow-y: auto; }
     .status-msg { font-weight: bold; margin-bottom: 15px; }
 </style>
 </head>
+
 <body>
 <div class="container">
     <h2>Painel do Administrador</h2>
+
     <p id="status" class="status-msg text-danger"></p>
+
     <div class="d-flex justify-content-between mb-3">
         <button class="btn btn-success" onclick="baixarXLSX()">⬇️ Baixar XLSX</button>
     </div>
+
     <div class="table-container">
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
                     <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
-                    <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th><th>Nº ADD</th><th>Observação</th>
+                    <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
+                    <th>Nº ADD</th><th>Observação</th>
                 </tr>
             </thead>
             <tbody id="tabela"></tbody>
@@ -39,13 +45,17 @@
 <script>
 let dados = [];
 
+// ⭐ Lista de administradores (pode ter quantos quiser)
+const ADMINS = ["3080117", "10374"];
+
 document.addEventListener("DOMContentLoaded", async () => {
     const matricula = localStorage.getItem("matricula");
     const status = document.getElementById("status");
 
-    if (matricula !== "3080117") {
+    // 🔐 Se tentar manipular localStorage, isso garante o bloqueio
+    if (!ADMINS.includes(matricula)) {
         status.innerText = "❌ Acesso negado. Apenas administradores podem ver esta página.";
-        setTimeout(() => window.location.href = "https://pedrofillype14.github.io/login/", 3000);
+        setTimeout(() => window.location.href = "https://pedrofillype14.github.io/login/", 2500);
         return;
     }
 
@@ -58,11 +68,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        status.classList.remove("text-danger");
-        status.classList.add("text-success");
+        status.classList.replace("text-danger", "text-success");
         status.innerText = `✅ ${dados.length} registros carregados com sucesso.`;
 
         preencherTabela(dados);
+
     } catch (err) {
         status.innerText = "Erro ao carregar dados: " + err.message;
     }
@@ -71,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 function preencherTabela(lista) {
     const tabela = document.getElementById("tabela");
     tabela.innerHTML = "";
+
     lista.forEach(item => {
         tabela.innerHTML += `
             <tr>
@@ -88,11 +99,14 @@ function baixarXLSX() {
         alert("Nenhum dado para exportar.");
         return;
     }
+
     const ws = XLSX.utils.json_to_sheet(dados);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registros");
+
     XLSX.writeFile(wb, "registros_ADD.xlsx");
 }
 </script>
+
 </body>
 </html>
