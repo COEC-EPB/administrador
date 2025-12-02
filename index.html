@@ -100,7 +100,23 @@ let dados = [];
 let dadosFiltrados = [];
 
 // ⭐ Admins autorizados
+// 🔐 Lista de matrículas permitidas
 const ADMINS = ["3080117", "10374"];
+
+// 📌 Verifica se o usuário está logado
+const matriculaLogin = localStorage.getItem("matricula");
+
+// ❌ Se não estiver logado → manda para login
+if (!matriculaLogin) {
+    window.location.href = "https://pedrofillype14.github.io/login/";
+}
+
+// ❌ Se estiver logado mas NÃO for admin → volta para página normal
+if (!ADMINS.includes(matriculaLogin)) {
+    alert("Acesso negado! Apenas administradores podem acessar esta página.");
+    window.location.href = "https://pedrofillype14.github.io/prestacao_de_contas/";
+}
+
 
 document.addEventListener("DOMContentLoaded", async () => {
     const matricula = localStorage.getItem("matricula");
