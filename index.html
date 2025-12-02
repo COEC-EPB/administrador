@@ -182,7 +182,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const status = document.getElementById("status");
 
     try {
-        const resp = await fetch("https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos");
+                const resp = await fetch(
+            "https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos",
+            {
+                headers: {
+                    "X-MATRICULA": localStorage.getItem("matricula")
+                }
+            }
+        );
         dados = await resp.json();
         dadosFiltrados = [...dados];
 
