@@ -154,12 +154,12 @@ const ADMINS = ["3080117", "10374"];
 const matriculaLogin = localStorage.getItem("matricula");
 
 if (!matriculaLogin) {
-    window.location.href = "https://pedrofillype14.github.io/login/";
+    window.location.href = "https://coec-epb.github.io/login/";
 }
 
 if (!ADMINS.includes(matriculaLogin)) {
     alert("Acesso negado!");
-    window.location.href = "https://pedrofillype14.github.io/prestacao_de_contas/";
+    window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
 }
 
 document.getElementById("userInfo").innerText =
@@ -171,7 +171,7 @@ document.getElementById("userInfo").innerText =
 
 function logout() {
     localStorage.removeItem("matricula");
-    window.location.href = "https://pedrofillype14.github.io/login/";
+    window.location.href = "https://coec-epb.github.io/login/";
 }
 
 /* ================================
