@@ -192,8 +192,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const mesAtual = String(new Date().getMonth() + 1).padStart(2, "0");
                 const anoAtual = new Date().getFullYear();
 
+                const hoje = new Date().toISOString().slice(0, 10);
+
                 const resp = await fetch(
-                  `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?mes=${mesAtual}&ano=${anoAtual}`,
+                  `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?dia=${hoje}`,
                   {
                     headers: {
                       "X-MATRICULA": localStorage.getItem("matricula")
@@ -243,22 +245,40 @@ function preencherTabela(lista) {
     FILTROS
 ================================ */
 
-function aplicarFiltros() {
-    const reg = document.getElementById("filtroRegional").value;
-    const polo = document.getElementById("filtroPolo").value;
-    const dtInicio = document.getElementById("dataInicio").value;
-    const dtFim = document.getElementById("dataFim").value;
+async function aplicarFiltros() {
+  const reg = document.getElementById("filtroRegional").value;
+  const polo = document.getElementById("filtroPolo").value;
+  const dtInicio = document.getElementById("dataInicio").value;
+  const dtFim = document.getElementById("dataFim").value;
 
-    dadosFiltrados = dados.filter(item => {
-        if (reg && item.regional !== reg) return false;
-        if (polo && item.polo !== polo) return false;
-        if (dtInicio && item.datauso < dtInicio) return false;
-        if (dtFim && item.datauso > dtFim) return false;
-        return true;
-    });
+  let url = "https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?";
+  const params = [];
 
-    preencherTabela(dadosFiltrados);
+  if (dtInicio && dtFim) {
+    // mês + ano pelo início
+    const [ano, mes] = dtInicio.split("-");
+    params.push(`mes=${mes}`, `ano=${ano}`);
+  }
+
+  const resp = await fetch(url + params.join("&"), {
+    headers: {
+      "X-MATRICULA": localStorage.getItem("matricula")
+    }
+  });
+
+  dados = await resp.json();
+
+  dadosFiltrados = dados.filter(item => {
+    if (reg && item.regional !== reg) return false;
+    if (polo && item.polo !== polo) return false;
+    if (dtInicio && item.datauso < dtInicio) return false;
+    if (dtFim && item.datauso > dtFim) return false;
+    return true;
+  });
+
+  preencherTabela(dadosFiltrados);
 }
+
 
 function limparFiltros() {
     document.getElementById("filtroRegional").value = "";
