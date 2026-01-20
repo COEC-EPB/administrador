@@ -124,6 +124,15 @@
                 <label class="fw-bold">Data Final</label>
                 <input id="dataFim" type="date" class="form-control">
             </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold">Matrícula</label>
+              <input
+                type="text"
+                id="filtroMatricula"
+                class="form-control"
+                placeholder="Digite a matrícula"
+              />
+            </div>
         </div>
 
         <div class="d-flex justify-content-end mt-3 gap-2">
@@ -233,6 +242,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("filtroPolo").value = "";
   document.getElementById("dataInicio").value = "";
   document.getElementById("dataFim").value = "";
+  document.getElementById("filtroMatricula").value = "";      
 
   const status = document.getElementById("status");
   status.className = "status-msg text-primary fw-bold";
@@ -348,12 +358,13 @@ async function aplicarFiltros() {
     const dados = await resp.json();
 
     dadosFiltrados = dados.filter(item => {
-      if (reg && item.regional !== reg) return false;
-      if (polo && item.polo !== polo) return false;
-      if (dtInicio && item.datauso < dtInicio) return false;
-      if (dtFim && item.datauso > dtFim) return false;
-      return true;
-    });
+  if (reg && item.regional !== reg) return false;
+  if (polo && item.polo !== polo) return false;
+  if (matriculaFiltro && !item.matricula.includes(matriculaFiltro)) return false;
+  if (dtInicio && item.datauso < dtInicio) return false;
+  if (dtFim && item.datauso > dtFim) return false;
+  return true;
+});
 
     preencherTabela(dadosFiltrados);
 
