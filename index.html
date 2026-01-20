@@ -333,6 +333,10 @@ async function aplicarFiltros() {
   const polo = document.getElementById("filtroPolo").value;
   const dtInicio = document.getElementById("dataInicio").value;
   const dtFim = document.getElementById("dataFim").value;
+  const matriculaFiltro = document
+  .getElementById("filtroMatricula")
+  .value
+  .trim();  
 
   // 🔄 FEEDBACK VISUAL
   status.className = "status-msg text-primary fw-bold";
@@ -360,9 +364,13 @@ async function aplicarFiltros() {
     dadosFiltrados = dados.filter(item => {
   if (reg && item.regional !== reg) return false;
   if (polo && item.polo !== polo) return false;
-  if (matriculaFiltro && !item.matricula.includes(matriculaFiltro)) return false;
+
+  // 🔥 SÓ FILTRA MATRÍCULA SE TIVER VALOR
+  if (matriculaFiltro && item.matricula !== matriculaFiltro) return false;
+
   if (dtInicio && item.datauso < dtInicio) return false;
   if (dtFim && item.datauso > dtFim) return false;
+
   return true;
 });
 
