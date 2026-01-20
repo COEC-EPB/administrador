@@ -391,7 +391,6 @@ async function aplicarFiltros() {
   if (!confirmar) return;
 
   try {
-    // 🔥 CHAMADA PARA O BACKEND
     const resp = await fetch(
       "https://long-hall-0aaa.pedro-fillype.workers.dev/excluir",
       {
@@ -404,22 +403,17 @@ async function aplicarFiltros() {
       }
     );
 
-    const resultado = await resp.json();
+    if (!resp.ok) throw new Error("Erro ao excluir");
 
+    const resultado = await resp.json();
     alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
 
-    // 🔄 REMOVE DA TELA
-    dadosFiltrados = dadosFiltrados.filter(
-      item => !selecionados.includes(String(item.id))
-    );
-    dados = dados.filter(
-      item => !selecionados.includes(String(item.id))
-    );
-
-    preencherTabela(dadosFiltrados);
+    // 🔥 AQUI FAZ O REFRESH
+    await limparFiltros();
 
   } catch (err) {
     alert("❌ Erro ao excluir registros");
+    console.error(err);
   }
 }
 </script>
