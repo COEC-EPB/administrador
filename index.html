@@ -127,7 +127,9 @@
         </div>
 
         <div class="d-flex justify-content-end mt-3 gap-2">
-            <button class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
+            <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
+    🔍 Aplicar
+        </button>
             <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
             <button class="btn btn-success" onclick="baixarXLSX()">⬇️ Baixar XLSX</button>
         </div>
@@ -246,38 +248,61 @@ function preencherTabela(lista) {
 ================================ */
 
 async function aplicarFiltros() {
+  const status = document.getElementById("status");
+  const btn = document.getElementById("btnFiltrar");
+
   const reg = document.getElementById("filtroRegional").value;
   const polo = document.getElementById("filtroPolo").value;
   const dtInicio = document.getElementById("dataInicio").value;
   const dtFim = document.getElementById("dataFim").value;
 
-  let url = "https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?";
-  const params = [];
+  // 🔄 FEEDBACK VISUAL
+  status.className = "status-msg text-primary fw-bold";
+  status.innerText = "🔄 Carregando dados...";
+  btn.disabled = true;
+  btn.innerHTML = "⏳ Aguarde...";
 
-  if (dtInicio && dtFim) {
-    // mês + ano pelo início
-    const [ano, mes] = dtInicio.split("-");
-    params.push(`mes=${mes}`, `ano=${ano}`);
-  }
+  try {
+    let url = "https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?";
+    const params = [];
 
-  const resp = await fetch(url + params.join("&"), {
-    headers: {
-      "X-MATRICULA": localStorage.getItem("matricula")
+    if (dtInicio && dtFim) {
+      const [ano, mes] = dtInicio.split("-");
+      params.push(`mes=${mes}`, `ano=${ano}`);
     }
-  });
 
-  dados = await resp.json();
+    const resp = await fetch(url + params.join("&"), {
+      headers: {
+        "X-MATRICULA": localStorage.getItem("matricula")
+      }
+    });
 
-  dadosFiltrados = dados.filter(item => {
-    if (reg && item.regional !== reg) return false;
-    if (polo && item.polo !== polo) return false;
-    if (dtInicio && item.datauso < dtInicio) return false;
-    if (dtFim && item.datauso > dtFim) return false;
-    return true;
-  });
+    const dados = await resp.json();
 
-  preencherTabela(dadosFiltrados);
+    dadosFiltrados = dados.filter(item => {
+      if (reg && item.regional !== reg) return false;
+      if (polo && item.polo !== polo) return false;
+      if (dtInicio && item.datauso < dtInicio) return false;
+      if (dtFim && item.datauso > dtFim) return false;
+      return true;
+    });
+
+    preencherTabela(dadosFiltrados);
+
+    // ✅ SUCESSO
+    status.className = "status-msg text-success fw-bold";
+    status.innerText = `✅ ${dadosFiltrados.length} registros encontrados`;
+
+  } catch (err) {
+    status.className = "status-msg text-danger fw-bold";
+    status.innerText = "❌ Erro ao buscar dados: " + err.message;
+  } finally {
+    // 🔓 REATIVA BOTÃO
+    btn.disabled = false;
+    btn.innerHTML = "🔍 Aplicar";
+  }
 }
+</script>
 
 
 function limparFiltros() {
