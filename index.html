@@ -187,6 +187,8 @@ function logout() {
     CARREGAR DADOS
 ================================ */
 
+    
+
 document.addEventListener("DOMContentLoaded", async () => {
     const status = document.getElementById("status");
 
@@ -220,6 +222,54 @@ document.addEventListener("DOMContentLoaded", async () => {
         status.innerText = "Erro ao carregar dados: " + err.message;
     }
 });
+    async function limparFiltros() {
+  document.getElementById("filtroRegional").value = "";
+  document.getElementById("filtroPolo").value = "";
+  document.getElementById("dataInicio").value = "";
+  document.getElementById("dataFim").value = "";
+
+  const status = document.getElementById("status");
+  status.className = "status-msg text-primary fw-bold";
+  status.innerText = "🔄 Recarregando dados...";
+
+  try {
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    const resp = await fetch(
+      `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?dia=${hoje}`,
+      {
+        headers: {
+          "X-MATRICULA": localStorage.getItem("matricula")
+        }
+      }
+    );
+
+    dados = await resp.json();
+    dadosFiltrados = [...dados];
+
+    preencherTabela(dadosFiltrados);
+
+    status.className = "status-msg text-success fw-bold";
+    status.innerText = `✅ ${dados.length} registros carregados`;
+
+  } catch (err) {
+    status.className = "status-msg text-danger fw-bold";
+    status.innerText = "❌ Erro ao recarregar dados";
+  }
+}
+    function baixarXLSX() {
+  if (!dadosFiltrados || dadosFiltrados.length === 0) {
+    alert("Nenhum dado para exportar.");
+    return;
+  }
+
+  const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Registros Filtrados");
+
+  XLSX.writeFile(wb, "registros_ADD_filtrados.xlsx");
+}
 
 /* ================================
     TABELA
