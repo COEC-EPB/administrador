@@ -132,6 +132,9 @@
         </button>
             <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
             <button class="btn btn-success" onclick="baixarXLSX()">⬇️ Baixar XLSX</button>
+            <button class="btn btn-danger" onclick="excluirSelecionados()">
+  🗑️ Excluir selecionados
+</button>
         </div>
     </div>
 
@@ -140,6 +143,9 @@
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-dark">
                 <tr>
+                    <th>
+                      <input type="checkbox" id="checkTodos" onclick="marcarTodos(this)">
+                    </th>
                     <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
                     <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
                     <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
@@ -276,21 +282,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 ================================ */
 
 function preencherTabela(lista) {
-    const tabela = document.getElementById("tabela");
-    tabela.innerHTML = "";
+  const tabela = document.getElementById("tabela");
+  tabela.innerHTML = "";
 
-    lista.forEach(item => {
-        tabela.innerHTML += `
-            <tr>
-                <td>${item.id}</td><td>${item.nome}</td><td>${item.email}</td>
-                <td>${item.regional}</td><td>${item.polo}</td>
-                <td>${item.matricula}</td><td>${item.datauso}</td><td>${item.tiporefeicao}</td>
-                <td>${item.horario}</td><td>${item.localidade}</td><td>${item.gps}</td>
-                <td>${item.sequencia || ""}</td><td>${item.osrrss || ""}</td>
-                <td>${item.numeroadd || ""}</td><td>${item.observacao || ""}</td>
-            </tr>
-        `;
-    });
+  lista.forEach(item => {
+    tabela.innerHTML += `
+      <tr>
+        <td class="text-center">
+          <input type="checkbox" class="check-item" value="${item.id}">
+        </td>
+        <td>${item.id}</td>
+        <td>${item.nome}</td>
+        <td>${item.email}</td>
+        <td>${item.regional}</td>
+        <td>${item.polo}</td>
+        <td>${item.matricula}</td>
+        <td>${item.datauso}</td>
+        <td>${item.tiporefeicao}</td>
+        <td>${item.horario}</td>
+        <td>${item.localidade}</td>
+        <td>${item.gps}</td>
+        <td>${item.sequencia || ""}</td>
+        <td>${item.osrrss || ""}</td>
+        <td>${item.numeroadd || ""}</td>
+        <td>${item.observacao || ""}</td>
+      </tr>
+    `;
+  });
 }
 
 /* ================================
@@ -350,6 +368,58 @@ async function aplicarFiltros() {
     // 🔓 REATIVA BOTÃO
     btn.disabled = false;
     btn.innerHTML = "🔍 Aplicar";
+  }
+}
+    function marcarTodos(checkbox) {
+  document.querySelectorAll(".check-item").forEach(cb => {
+    cb.checked = checkbox.checked;
+  });
+}
+    async function excluirSelecionados() {
+  const selecionados = [...document.querySelectorAll(".check-item:checked")]
+    .map(cb => cb.value);
+
+  if (selecionados.length === 0) {
+    alert("Selecione ao menos um registro.");
+    return;
+  }
+
+  const confirmar = confirm(
+    `⚠️ Tem certeza que deseja excluir ${selecionados.length} registro(s)?\n\nEssa ação NÃO pode ser desfeita.`
+  );
+
+  if (!confirmar) return;
+
+  try {
+    // 🔥 CHAMADA PARA O BACKEND
+    const resp = await fetch(
+      "https://long-hall-0aaa.pedro-fillype.workers.dev/excluir",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-MATRICULA": localStorage.getItem("matricula")
+        },
+        body: JSON.stringify({ ids: selecionados })
+      }
+    );
+
+    const resultado = await resp.json();
+
+    alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
+
+    // 🔄 REMOVE DA TELA
+    dadosFiltrados = dadosFiltrados.filter(
+      item => !selecionados.includes(String(item.id))
+    );
+    dados = dados.filter(
+      item => !selecionados.includes(String(item.id))
+    );
+
+    preencherTabela(dadosFiltrados);
+
+  } catch (err) {
+    alert("❌ Erro ao excluir registros");
   }
 }
 </script>
