@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel do Administrador - ADD</title>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
@@ -73,12 +74,11 @@
 <!-- 🔵 BARRA SUPERIOR -->
 <div class="topbar">
     <h4 class="m-0">Painel do Administrador - Energisa</h4>
+
     <div class="d-flex align-items-center gap-2">
-        <a href="https://coec-epb.github.io/prestacao_dashboard/" 
+        <a href="https://coec-epb.github.io/prestacao_dashboard/"
            class="btn btn-light fw-bold"
-           style="border-radius: 6px;">
-           ⬅️ Voltar
-        </a>
+           style="border-radius: 6px;">⬅️ Voltar</a>
 
         <span id="userInfo" class="me-3 fw-bold"></span>
 
@@ -92,8 +92,8 @@
 
     <!-- 🔎 FILTROS -->
     <div class="filter-card mb-4">
-
         <div class="row">
+
             <div class="col-md-3">
                 <label class="fw-bold">Filtrar por Regional</label>
                 <select id="filtroRegional" class="form-select">
@@ -124,26 +124,19 @@
                 <label class="fw-bold">Data Final</label>
                 <input id="dataFim" type="date" class="form-control">
             </div>
-            <div class="col-md-3">
-              <label class="form-label fw-bold">Matrícula</label>
-              <input
-                type="text"
-                id="filtroMatricula"
-                class="form-control"
-                placeholder="Digite a matrícula"
-              />
+
+            <div class="col-md-3 mt-3">
+                <label class="form-label fw-bold">Matrícula</label>
+                <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula">
             </div>
+
         </div>
 
         <div class="d-flex justify-content-end mt-3 gap-2">
-            <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
-    🔍 Aplicar
-        </button>
+            <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
             <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
             <button class="btn btn-success" onclick="baixarXLSX()">⬇️ Baixar XLSX</button>
-            <button class="btn btn-danger" onclick="excluirSelecionados()">
-  🗑️ Excluir selecionados
-</button>
+            <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
         </div>
     </div>
 
@@ -152,9 +145,7 @@
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-dark">
                 <tr>
-                    <th>
-                      <input type="checkbox" id="checkTodos" onclick="marcarTodos(this)">
-                    </th>
+                    <th><input type="checkbox" id="checkTodos" onclick="marcarTodos(this)"></th>
                     <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
                     <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
                     <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
@@ -164,19 +155,22 @@
             <tbody id="tabela"></tbody>
         </table>
     </div>
+
 </div>
 
 <script>
+/* ============================================================
+    VARIÁVEIS
+============================================================ */
 let dados = [];
 let dadosFiltrados = [];
-
-/* ================================
-    🔐 BLOQUEIO DE ADMIN
-================================ */
 
 const ADMINS = ["3080117", "3056107","3001621","10267","10436","9170"];
 const matriculaLogin = localStorage.getItem("matricula");
 
+/* ============================================================
+    BLOQUEIO DE ADMIN
+============================================================ */
 if (!matriculaLogin) {
     window.location.href = "https://coec-epb.github.io/login/";
 }
@@ -189,30 +183,26 @@ if (!ADMINS.includes(matriculaLogin)) {
 document.getElementById("userInfo").innerText =
     "Logado como: " + matriculaLogin;
 
-/* ================================
+/* ============================================================
     LOGOUT
-================================ */
-
+============================================================ */
 function logout() {
     localStorage.removeItem("matricula");
     window.location.href = "https://coec-epb.github.io/login/";
 }
 
-/* ================================
-    CARREGAR DADOS
-================================ */
-
-    
-
+/* ============================================================
+    CARREGAMENTO INICIAL (dia atual)
+============================================================ */
 document.addEventListener("DOMContentLoaded", async () => {
   const status = document.getElementById("status");
   const hoje = new Date().toISOString().slice(0, 10);
 
+  status.className = "status-msg text-primary fw-bold";
+  status.innerText = "🔄 Carregando registros do dia...";
+
   dados = [];
   dadosFiltrados = [];
-
-  status.className = "status-msg text-primary fw-bold";
-  status.innerText = "🔄 Carregando em partes...";
 
   try {
     let offset = 0;
@@ -220,8 +210,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     while (true) {
       const resp = await fetch(
-        `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?dia=${hoje}&limit=${limit}&offset=${offset}`,
-        { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+        `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?dataInicio=${hoje}&dataFim=${hoje}&limit=${limit}&offset=${offset}`,
+        { headers: { "X-MATRICULA": matriculaLogin } }
       );
 
       const payload = await resp.json();
@@ -230,9 +220,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       dados.push(...items);
       dadosFiltrados = [...dados];
 
-      // atualiza tela “ao vivo”
       preencherTabela(dadosFiltrados);
-      status.innerText = `🔄 Carregando... já veio ${dados.length} registro(s)`;
+      status.innerText = `🔄 Carregando... ${dados.length} registro(s)`;
 
       if (!payload.hasMore) break;
       offset = payload.nextOffset;
@@ -243,49 +232,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   } catch (err) {
     status.className = "status-msg text-danger fw-bold";
-    status.innerText = "❌ Erro ao carregar dados: " + err.message;
+    status.innerText = `❌ Erro ao carregar: ${err.message}`;
   }
 });
 
-    
-    async function limparFiltros() {
-  document.getElementById("filtroRegional").value = "";
-  document.getElementById("filtroPolo").value = "";
-  document.getElementById("dataInicio").value = "";
-  document.getElementById("dataFim").value = "";
-  document.getElementById("filtroMatricula").value = "";      
+/* ============================================================
+    LIMPAR FILTROS
+============================================================ */
+async function limparFiltros() {
+    document.getElementById("filtroRegional").value = "";
+    document.getElementById("filtroPolo").value = "";
+    document.getElementById("dataInicio").value = "";
+    document.getElementById("dataFim").value = "";
+    document.getElementById("filtroMatricula").value = "";
 
-  const status = document.getElementById("status");
-  status.className = "status-msg text-primary fw-bold";
-  status.innerText = "🔄 Recarregando dados...";
-
-  try {
-    const hoje = new Date().toISOString().slice(0, 10);
-
-    const resp = await fetch(
-      `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?dia=${hoje}`,
-      {
-        headers: {
-          "X-MATRICULA": localStorage.getItem("matricula")
-        }
-      }
-    );
-
-    dados = await resp.json();
-    dadosFiltrados = [...dados];
-
-    preencherTabela(dadosFiltrados);
-
-    status.className = "status-msg text-success fw-bold";
-    status.innerText = `✅ ${dados.length} registros carregados`;
-
-  } catch (err) {
-    status.className = "status-msg text-danger fw-bold";
-    status.innerText = "❌ Erro ao recarregar dados";
-  }
+    document.dispatchEvent(new Event("DOMContentLoaded"));
 }
-    function baixarXLSX() {
-  if (!dadosFiltrados || dadosFiltrados.length === 0) {
+
+/* ============================================================
+    EXPORTAR XLSX
+============================================================ */
+function baixarXLSX() {
+  if (!dadosFiltrados.length) {
     alert("Nenhum dado para exportar.");
     return;
   }
@@ -293,25 +261,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
   const wb = XLSX.utils.book_new();
 
-  XLSX.utils.book_append_sheet(wb, ws, "Registros Filtrados");
-
-  XLSX.writeFile(wb, "registros_ADD_filtrados.xlsx");
+  XLSX.utils.book_append_sheet(wb, ws, "Registros");
+  XLSX.writeFile(wb, "registros_filtrados.xlsx");
 }
 
-/* ================================
+/* ============================================================
     TABELA
-================================ */
-
+============================================================ */
 function preencherTabela(lista) {
   const tabela = document.getElementById("tabela");
   tabela.innerHTML = "";
 
-  lista.forEach(item => {
+  for (const item of lista) {
     tabela.innerHTML += `
       <tr>
-        <td class="text-center">
-          <input type="checkbox" class="check-item" value="${item.id}">
-        </td>
+        <td><input type="checkbox" class="check-item" value="${item.id}"></td>
         <td>${item.id}</td>
         <td>${item.nome}</td>
         <td>${item.email}</td>
@@ -329,13 +293,12 @@ function preencherTabela(lista) {
         <td>${item.observacao || ""}</td>
       </tr>
     `;
-  });
+  }
 }
 
-/* ================================
-    FILTROS
-================================ */
-
+/* ============================================================
+    FILTRAR NO WORKER (CHUNKY)
+============================================================ */
 async function aplicarFiltros() {
   const status = document.getElementById("status");
   const btn = document.getElementById("btnFiltrar");
@@ -347,7 +310,7 @@ async function aplicarFiltros() {
   const matricula = document.getElementById("filtroMatricula").value.trim();
 
   status.className = "status-msg text-primary fw-bold";
-  status.innerText = "🔄 Carregando dados...";
+  status.innerText = "🔄 Buscando...";
   btn.disabled = true;
   btn.innerHTML = "⏳ Aguarde...";
 
@@ -358,7 +321,6 @@ async function aplicarFiltros() {
     let offset = 0;
     const limit = 500;
 
-    // monta querystring só com o que existe
     const buildQS = (offsetAtual) => {
       const p = new URLSearchParams();
       if (regional) p.set("regional", regional);
@@ -374,17 +336,8 @@ async function aplicarFiltros() {
     while (true) {
       const resp = await fetch(
         `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?${buildQS(offset)}`,
-        {
-          headers: {
-            "X-MATRICULA": localStorage.getItem("matricula")
-          }
-        }
+        { headers: { "X-MATRICULA": matriculaLogin } }
       );
-
-      if (!resp.ok) {
-        const t = await resp.text();
-        throw new Error(`HTTP ${resp.status}: ${t}`);
-      }
 
       const payload = await resp.json();
       const items = payload.items || [];
@@ -393,7 +346,7 @@ async function aplicarFiltros() {
       dadosFiltrados = [...dados];
 
       preencherTabela(dadosFiltrados);
-      status.innerText = `🔄 Carregando... ${dados.length} registro(s)`;
+      status.innerText = `🔄 Carregando... ${dados.length} registros`;
 
       if (!payload.hasMore) break;
       offset = payload.nextOffset;
@@ -404,47 +357,34 @@ async function aplicarFiltros() {
 
   } catch (err) {
     status.className = "status-msg text-danger fw-bold";
-    status.innerText = "❌ Erro ao buscar dados: " + err.message;
+    status.innerText = `❌ Erro: ${err.message}`;
   } finally {
     btn.disabled = false;
     btn.innerHTML = "🔍 Aplicar";
   }
 }
 
-    preencherTabela(dadosFiltrados);
-
-    // ✅ SUCESSO
-    status.className = "status-msg text-success fw-bold";
-    status.innerText = `✅ ${dadosFiltrados.length} registros encontrados`;
-
-  } catch (err) {
-    status.className = "status-msg text-danger fw-bold";
-    status.innerText = "❌ Erro ao buscar dados: " + err.message;
-  } finally {
-    // 🔓 REATIVA BOTÃO
-    btn.disabled = false;
-    btn.innerHTML = "🔍 Aplicar";
-  }
-}
-    function marcarTodos(checkbox) {
+/* ============================================================
+    SELECIONAR TODOS
+============================================================ */
+function marcarTodos(checkbox) {
   document.querySelectorAll(".check-item").forEach(cb => {
     cb.checked = checkbox.checked;
   });
 }
-    async function excluirSelecionados() {
-  const selecionados = [...document.querySelectorAll(".check-item:checked")]
-    .map(cb => cb.value);
+
+/* ============================================================
+    EXCLUIR
+============================================================ */
+async function excluirSelecionados() {
+  const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
 
   if (selecionados.length === 0) {
     alert("Selecione ao menos um registro.");
     return;
   }
 
-  const confirmar = confirm(
-    `⚠️ Tem certeza que deseja excluir ${selecionados.length} registro(s)?\n\nEssa ação NÃO pode ser desfeita.`
-  );
-
-  if (!confirmar) return;
+  if (!confirm(`Excluir ${selecionados.length} registros?`)) return;
 
   try {
     const resp = await fetch(
@@ -453,27 +393,22 @@ async function aplicarFiltros() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-MATRICULA": localStorage.getItem("matricula")
+          "X-MATRICULA": matriculaLogin
         },
         body: JSON.stringify({ ids: selecionados })
       }
     );
 
-    if (!resp.ok) throw new Error("Erro ao excluir");
+    const out = await resp.json();
+    alert(`🔥 ${out.excluidos} registros apagados`);
 
-    const resultado = await resp.json();
-    alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
-
-    // 🔥 AQUI FAZ O REFRESH
-    await limparFiltros();
+    await aplicarFiltros();
 
   } catch (err) {
-    alert("❌ Erro ao excluir registros");
-    console.error(err);
+    alert("Erro ao excluir");
   }
 }
 </script>
-
 
 </body>
 </html>
