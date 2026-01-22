@@ -1,414 +1,520 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel do Administrador - ADD</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel do Administrador - ADD</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-<style>
-    :root {
-        --energisa-blue: #0097CE;
-        --energisa-blue-dark: #0079a6;
-        --energisa-orange: #F36F21;
+  <style>
+    :root{
+      --energisa-blue:#0097CE;
+      --energisa-blue-dark:#0079a6;
+      --energisa-orange:#F36F21;
     }
-
-    body {
-        background: #f4f6f9;
-        font-family: 'Segoe UI', sans-serif;
+    body{ background:#f4f6f9; font-family:'Segoe UI',sans-serif; }
+    .topbar{
+      background:var(--energisa-blue); color:#fff; padding:15px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:4px solid var(--energisa-orange);
     }
-
-    .topbar {
-        background: var(--energisa-blue);
-        color: white;
-        padding: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 4px solid var(--energisa-orange);
+    .logout-btn{
+      background:var(--energisa-orange); border:none; color:#fff;
+      padding:8px 15px; border-radius:6px; font-weight:bold; transition:.3s;
     }
-
-    .logout-btn {
-        background: var(--energisa-orange);
-        border: none;
-        color: white;
-        padding: 8px 15px;
-        border-radius: 6px;
-        font-weight: bold;
-        transition: 0.3s;
+    .logout-btn:hover{ background:#d95f1c; }
+    .container{ max-width:97%; margin-top:25px; }
+    .table-container{
+      max-height:750px; overflow:auto;
+      border:2px solid #ddd; border-radius:6px;
+      background:#fff;
     }
-    .logout-btn:hover {
-        background: #d95f1c;
+    table td, table th{ padding:10px; font-size:.90rem; white-space:nowrap; }
+    .filter-card{
+      padding:20px; background:#fff; border-radius:8px;
+      box-shadow:0 2px 5px rgb(0 0 0 / 0.15);
     }
-
-    .container {
-        max-width: 97%;
-        margin-top: 25px;
+    .pager{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 0;
     }
-
-    .table-container {
-        max-height: 750px;
-        overflow-y: auto;
-        border: 2px solid #ddd;
-        border-radius: 6px;
-    }
-
-    table td, table th {
-        padding: 10px;
-        font-size: 0.90rem;
-    }
-
-    .filter-card {
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgb(0 0 0 / 0.15);
-    }
-</style>
+    .pager .left, .pager .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .muted{ color:#6c757d; font-size:.9rem; }
+  </style>
 </head>
 
 <body>
-
-<!-- 🔵 BARRA SUPERIOR -->
-<div class="topbar">
+  <!-- 🔵 BARRA SUPERIOR -->
+  <div class="topbar">
     <h4 class="m-0">Painel do Administrador - Energisa</h4>
-
     <div class="d-flex align-items-center gap-2">
-        <a href="https://coec-epb.github.io/prestacao_dashboard/"
-           class="btn btn-light fw-bold"
-           style="border-radius: 6px;">⬅️ Voltar</a>
+      <a href="https://coec-epb.github.io/prestacao_dashboard/"
+         class="btn btn-light fw-bold" style="border-radius:6px;">
+        ⬅️ Voltar
+      </a>
 
-        <span id="userInfo" class="me-3 fw-bold"></span>
+      <span id="userInfo" class="me-3 fw-bold"></span>
 
-        <button class="logout-btn" onclick="logout()">Sair</button>
+      <button class="logout-btn" onclick="logout()">Sair</button>
     </div>
-</div>
+  </div>
 
-<div class="container">
+  <div class="container">
 
     <p id="status" class="status-msg text-danger"></p>
 
     <!-- 🔎 FILTROS -->
     <div class="filter-card mb-4">
-        <div class="row">
-
-            <div class="col-md-3">
-                <label class="fw-bold">Filtrar por Regional</label>
-                <select id="filtroRegional" class="form-select">
-                    <option value="">Todas</option>
-                    <option>LESTE</option>
-                    <option>CENTRO</option>
-                    <option>OESTE</option>
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label class="fw-bold">Filtrar por Polo</label>
-                <select id="filtroPolo" class="form-select">
-                    <option value="">Todos</option>
-                    <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
-                    <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
-                    <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
-                    <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
-                </select>
-            </div>
-
-            <div class="col-md-3">
-                <label class="fw-bold">Data Inicial</label>
-                <input id="dataInicio" type="date" class="form-control">
-            </div>
-
-            <div class="col-md-3">
-                <label class="fw-bold">Data Final</label>
-                <input id="dataFim" type="date" class="form-control">
-            </div>
-
-            <div class="col-md-3 mt-3">
-                <label class="form-label fw-bold">Matrícula</label>
-                <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula">
-            </div>
-
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="fw-bold">Filtrar por Regional</label>
+          <select id="filtroRegional" class="form-select">
+            <option value="">Todas</option>
+            <option>LESTE</option>
+            <option>CENTRO</option>
+            <option>OESTE</option>
+          </select>
         </div>
 
-        <div class="d-flex justify-content-end mt-3 gap-2">
-            <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
-            <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
-            <button class="btn btn-success" onclick="baixarXLSX()">⬇️ Baixar XLSX</button>
-            <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
+        <div class="col-md-3">
+          <label class="fw-bold">Filtrar por Polo</label>
+          <select id="filtroPolo" class="form-select">
+            <option value="">Todos</option>
+            <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
+            <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
+            <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
+            <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
+          </select>
         </div>
+
+        <div class="col-md-3">
+          <label class="fw-bold">Data Inicial</label>
+          <input id="dataInicio" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="fw-bold">Data Final</label>
+          <input id="dataFim" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Matrícula</label>
+          <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Itens por página</label>
+          <select id="selectPorPagina" class="form-select">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+          <div class="muted mt-1">Afeta paginação e exportação “tudo filtrado”.</div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3 gap-2 flex-wrap">
+        <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
+        <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
+
+        <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Baixar página</button>
+        <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo filtrado</button>
+
+        <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
+      </div>
+    </div>
+
+    <!-- 📄 PAGINAÇÃO -->
+    <div class="pager">
+      <div class="left">
+        <button id="btnAnterior" class="btn btn-outline-primary" onclick="paginaAnterior()">⬅️ Anterior</button>
+        <button id="btnProximo" class="btn btn-outline-primary" onclick="proximaPagina()">Próximo ➡️</button>
+        <span class="muted" id="infoPaginacao">Página 1</span>
+      </div>
+
+      <div class="right">
+        <label class="muted m-0">Ir para página:</label>
+        <input id="inputIrPagina" type="number" min="1" class="form-control" style="width:110px" />
+        <button class="btn btn-outline-secondary" onclick="irParaPagina()">Ir</button>
+      </div>
     </div>
 
     <!-- 🧾 TABELA -->
     <div class="table-container">
-        <table class="table table-bordered table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th><input type="checkbox" id="checkTodos" onclick="marcarTodos(this)"></th>
-                    <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
-                    <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
-                    <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
-                    <th>Nº ADD</th><th>Observação</th>
-                </tr>
-            </thead>
-            <tbody id="tabela"></tbody>
-        </table>
+      <table class="table table-bordered table-striped table-hover mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th class="text-center">
+              <input type="checkbox" id="checkTodos" onclick="marcarTodos(this)" />
+            </th>
+            <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
+            <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
+            <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
+            <th>Nº ADD</th><th>Observação</th>
+          </tr>
+        </thead>
+        <tbody id="tabela"></tbody>
+      </table>
     </div>
+  </div>
 
-</div>
+  <script>
+    // ================================
+    // 🔐 BLOQUEIO DE ADMIN
+    // ================================
+    const ADMINS = ["3080117","3056107","3001621","10267","10436","9170"];
+    const matriculaLogin = localStorage.getItem("matricula");
 
-<script>
-/* ============================================================
-    VARIÁVEIS
-============================================================ */
-let dados = [];
-let dadosFiltrados = [];
+    if (!matriculaLogin) window.location.href = "https://coec-epb.github.io/login/";
+    if (!ADMINS.includes(matriculaLogin)) {
+      alert("Acesso negado!");
+      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
+    }
+    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
-const ADMINS = ["3080117", "3056107","3001621","10267","10436","9170"];
-const matriculaLogin = localStorage.getItem("matricula");
-
-/* ============================================================
-    BLOQUEIO DE ADMIN
-============================================================ */
-if (!matriculaLogin) {
-    window.location.href = "https://coec-epb.github.io/login/";
-}
-
-if (!ADMINS.includes(matriculaLogin)) {
-    alert("Acesso negado!");
-    window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
-}
-
-document.getElementById("userInfo").innerText =
-    "Logado como: " + matriculaLogin;
-
-/* ============================================================
-    LOGOUT
-============================================================ */
-function logout() {
-    localStorage.removeItem("matricula");
-    window.location.href = "https://coec-epb.github.io/login/";
-}
-
-/* ============================================================
-    CARREGAMENTO INICIAL (dia atual)
-============================================================ */
-document.addEventListener("DOMContentLoaded", async () => {
-  const status = document.getElementById("status");
-  const hoje = new Date().toISOString().slice(0, 10);
-
-  status.className = "status-msg text-primary fw-bold";
-  status.innerText = "🔄 Carregando registros do dia...";
-
-  dados = [];
-  dadosFiltrados = [];
-
-  try {
-    let offset = 0;
-    const limit = 500;
-
-    while (true) {
-      const resp = await fetch(
-        `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?dataInicio=${hoje}&dataFim=${hoje}&limit=${limit}&offset=${offset}`,
-        { headers: { "X-MATRICULA": matriculaLogin } }
-      );
-
-      const payload = await resp.json();
-      const items = payload.items || [];
-
-      dados.push(...items);
-      dadosFiltrados = [...dados];
-
-      preencherTabela(dadosFiltrados);
-      status.innerText = `🔄 Carregando... ${dados.length} registro(s)`;
-
-      if (!payload.hasMore) break;
-      offset = payload.nextOffset;
+    function logout() {
+      localStorage.removeItem("matricula");
+      window.location.href = "https://coec-epb.github.io/login/";
     }
 
-    status.classList.replace("text-primary", "text-success");
-    status.innerText = `✅ ${dados.length} registros carregados`;
+    // ================================
+    // CONFIG
+    // ================================
+    const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
-  } catch (err) {
-    status.className = "status-msg text-danger fw-bold";
-    status.innerText = `❌ Erro ao carregar: ${err.message}`;
-  }
-});
+    // Estado da tela
+    let paginaAtual = 1;
+    let totalPages = 1;
+    let totalItems = 0;
 
-/* ============================================================
-    LIMPAR FILTROS
-============================================================ */
-async function limparFiltros() {
-    document.getElementById("filtroRegional").value = "";
-    document.getElementById("filtroPolo").value = "";
-    document.getElementById("dataInicio").value = "";
-    document.getElementById("dataFim").value = "";
-    document.getElementById("filtroMatricula").value = "";
+    // Itens da página (o que aparece na tabela)
+    let dadosFiltrados = [];
 
-    document.dispatchEvent(new Event("DOMContentLoaded"));
-}
-
-/* ============================================================
-    EXPORTAR XLSX
-============================================================ */
-function baixarXLSX() {
-  if (!dadosFiltrados.length) {
-    alert("Nenhum dado para exportar.");
-    return;
-  }
-
-  const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Registros");
-  XLSX.writeFile(wb, "registros_filtrados.xlsx");
-}
-
-/* ============================================================
-    TABELA
-============================================================ */
-function preencherTabela(lista) {
-  const tabela = document.getElementById("tabela");
-  tabela.innerHTML = "";
-
-  for (const item of lista) {
-    tabela.innerHTML += `
-      <tr>
-        <td><input type="checkbox" class="check-item" value="${item.id}"></td>
-        <td>${item.id}</td>
-        <td>${item.nome}</td>
-        <td>${item.email}</td>
-        <td>${item.regional}</td>
-        <td>${item.polo}</td>
-        <td>${item.matricula}</td>
-        <td>${item.datauso}</td>
-        <td>${item.tiporefeicao}</td>
-        <td>${item.horario}</td>
-        <td>${item.localidade}</td>
-        <td>${item.gps}</td>
-        <td>${item.sequencia || ""}</td>
-        <td>${item.osrrss || ""}</td>
-        <td>${item.numeroadd || ""}</td>
-        <td>${item.observacao || ""}</td>
-      </tr>
-    `;
-  }
-}
-
-/* ============================================================
-    FILTRAR NO WORKER (CHUNKY)
-============================================================ */
-async function aplicarFiltros() {
-  const status = document.getElementById("status");
-  const btn = document.getElementById("btnFiltrar");
-
-  const regional = document.getElementById("filtroRegional").value.trim();
-  const polo = document.getElementById("filtroPolo").value.trim();
-  const dataInicio = document.getElementById("dataInicio").value;
-  const dataFim = document.getElementById("dataFim").value;
-  const matricula = document.getElementById("filtroMatricula").value.trim();
-
-  status.className = "status-msg text-primary fw-bold";
-  status.innerText = "🔄 Buscando...";
-  btn.disabled = true;
-  btn.innerHTML = "⏳ Aguarde...";
-
-  try {
-    dados = [];
-    dadosFiltrados = [];
-
-    let offset = 0;
-    const limit = 500;
-
-    const buildQS = (offsetAtual) => {
-      const p = new URLSearchParams();
-      if (regional) p.set("regional", regional);
-      if (polo) p.set("polo", polo);
-      if (matricula) p.set("matricula", matricula);
-      if (dataInicio) p.set("dataInicio", dataInicio);
-      if (dataFim) p.set("dataFim", dataFim);
-      p.set("limit", String(limit));
-      p.set("offset", String(offsetAtual));
-      return p.toString();
+    // Últimos filtros aplicados (persistem na paginação)
+    const filtros = {
+      regional: "",
+      polo: "",
+      matricula: "",
+      dataInicio: "",
+      dataFim: "",
+      limit: 50
     };
 
-    while (true) {
-      const resp = await fetch(
-        `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?${buildQS(offset)}`,
-        { headers: { "X-MATRICULA": matriculaLogin } }
-      );
-
-      const payload = await resp.json();
-      const items = payload.items || [];
-
-      dados.push(...items);
-      dadosFiltrados = [...dados];
-
-      preencherTabela(dadosFiltrados);
-      status.innerText = `🔄 Carregando... ${dados.length} registros`;
-
-      if (!payload.hasMore) break;
-      offset = payload.nextOffset;
+    // ================================
+    // HELPERS
+    // ================================
+    function setStatus(text, type="primary") {
+      const status = document.getElementById("status");
+      status.className = "status-msg fw-bold text-" + type;
+      status.innerText = text;
     }
 
-    status.className = "status-msg text-success fw-bold";
-    status.innerText = `✅ ${dados.length} registros encontrados`;
+    function getLimit() {
+      const v = Number(document.getElementById("selectPorPagina").value || 50);
+      return Number.isFinite(v) ? v : 50;
+    }
 
-  } catch (err) {
-    status.className = "status-msg text-danger fw-bold";
-    status.innerText = `❌ Erro: ${err.message}`;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = "🔍 Aplicar";
-  }
-}
+    function lerFiltrosDaTela() {
+      filtros.regional   = document.getElementById("filtroRegional").value.trim();
+      filtros.polo       = document.getElementById("filtroPolo").value.trim();
+      filtros.dataInicio = document.getElementById("dataInicio").value;
+      filtros.dataFim    = document.getElementById("dataFim").value;
+      filtros.matricula  = document.getElementById("filtroMatricula").value.trim();
+      filtros.limit      = getLimit();
+    }
 
-/* ============================================================
-    SELECIONAR TODOS
-============================================================ */
-function marcarTodos(checkbox) {
-  document.querySelectorAll(".check-item").forEach(cb => {
-    cb.checked = checkbox.checked;
-  });
-}
+    function montarQS(page) {
+      const p = new URLSearchParams();
+      if (filtros.regional)   p.set("regional", filtros.regional);
+      if (filtros.polo)       p.set("polo", filtros.polo);
+      if (filtros.matricula)  p.set("matricula", filtros.matricula);
+      if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
+      if (filtros.dataFim)    p.set("dataFim", filtros.dataFim);
 
-/* ============================================================
-    EXCLUIR
-============================================================ */
-async function excluirSelecionados() {
-  const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
+      p.set("page", String(page));
+      p.set("limit", String(filtros.limit));
 
-  if (selecionados.length === 0) {
-    alert("Selecione ao menos um registro.");
-    return;
-  }
+      return p.toString();
+    }
 
-  if (!confirm(`Excluir ${selecionados.length} registros?`)) return;
+    function atualizarUIpaginacao() {
+      document.getElementById("infoPaginacao").innerText =
+        `Página ${paginaAtual} de ${totalPages} • ${totalItems} registro(s)`;
 
-  try {
-    const resp = await fetch(
-      "https://long-hall-0aaa.pedro-fillype.workers.dev/excluir",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-MATRICULA": matriculaLogin
-        },
-        body: JSON.stringify({ ids: selecionados })
+      document.getElementById("btnAnterior").disabled = paginaAtual <= 1;
+      document.getElementById("btnProximo").disabled = paginaAtual >= totalPages;
+      document.getElementById("checkTodos").checked = false;
+    }
+
+    // ================================
+    // TABELA
+    // ================================
+    function preencherTabela(lista) {
+      const tabela = document.getElementById("tabela");
+      tabela.innerHTML = "";
+
+      lista.forEach(item => {
+        tabela.innerHTML += `
+          <tr>
+            <td class="text-center">
+              <input type="checkbox" class="check-item" value="${item.id}">
+            </td>
+            <td>${item.id ?? ""}</td>
+            <td>${item.nome ?? ""}</td>
+            <td>${item.email ?? ""}</td>
+            <td>${item.regional ?? ""}</td>
+            <td>${item.polo ?? ""}</td>
+            <td>${item.matricula ?? ""}</td>
+            <td>${item.datauso ?? ""}</td>
+            <td>${item.tiporefeicao ?? ""}</td>
+            <td>${item.horario ?? ""}</td>
+            <td>${item.localidade ?? ""}</td>
+            <td>${item.gps ?? ""}</td>
+            <td>${item.sequencia ?? ""}</td>
+            <td>${item.osrrss ?? ""}</td>
+            <td>${item.numeroadd ?? ""}</td>
+            <td>${item.observacao ?? ""}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function marcarTodos(checkbox) {
+      document.querySelectorAll(".check-item").forEach(cb => cb.checked = checkbox.checked);
+    }
+
+    // ================================
+    // BUSCA (SERVER-SIDE)
+    // Esperado do Worker:
+    // {
+    //   items: [...],
+    //   page: 1,
+    //   limit: 50,
+    //   totalItems: 1234,
+    //   totalPages: 25
+    // }
+    // ================================
+    async function carregarPagina(page) {
+      const btnFiltrar = document.getElementById("btnFiltrar");
+      btnFiltrar.disabled = true;
+
+      try {
+        setStatus("🔄 Carregando dados...", "primary");
+
+        const resp = await fetch(
+          `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+          { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+        );
+
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${t}`);
+        }
+
+        const payload = await resp.json();
+
+        dadosFiltrados = payload.items || [];
+        paginaAtual = Number(payload.page || page);
+        totalPages = Number(payload.totalPages || 1);
+        totalItems = Number(payload.totalItems || dadosFiltrados.length);
+
+        preencherTabela(dadosFiltrados);
+        atualizarUIpaginacao();
+
+        setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
+
+      } catch (err) {
+        setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
+      } finally {
+        btnFiltrar.disabled = false;
       }
-    );
+    }
 
-    const out = await resp.json();
-    alert(`🔥 ${out.excluidos} registros apagados`);
+    // ================================
+    // AÇÕES DE FILTRO / PAGINAÇÃO
+    // ================================
+    async function aplicarFiltros() {
+      const btn = document.getElementById("btnFiltrar");
+      btn.disabled = true;
+      btn.innerHTML = "⏳ Aguarde...";
 
-    await aplicarFiltros();
+      try {
+        lerFiltrosDaTela();
+        paginaAtual = 1;
+        await carregarPagina(paginaAtual);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "🔍 Aplicar";
+      }
+    }
 
-  } catch (err) {
-    alert("Erro ao excluir");
-  }
-}
-</script>
+    async function limparFiltros() {
+      document.getElementById("filtroRegional").value = "";
+      document.getElementById("filtroPolo").value = "";
+      document.getElementById("dataInicio").value = "";
+      document.getElementById("dataFim").value = "";
+      document.getElementById("filtroMatricula").value = "";
+      document.getElementById("selectPorPagina").value = "50";
 
+      lerFiltrosDaTela();
+      paginaAtual = 1;
+      await carregarPagina(paginaAtual);
+    }
+
+    async function proximaPagina() {
+      if (paginaAtual < totalPages) {
+        await carregarPagina(paginaAtual + 1);
+      }
+    }
+
+    async function paginaAnterior() {
+      if (paginaAtual > 1) {
+        await carregarPagina(paginaAtual - 1);
+      }
+    }
+
+    async function irParaPagina() {
+      const v = Number(document.getElementById("inputIrPagina").value);
+      if (!Number.isFinite(v) || v < 1) return;
+
+      const destino = Math.max(1, Math.min(totalPages, v));
+      await carregarPagina(destino);
+    }
+
+    // ================================
+    // EXPORTAÇÃO XLSX
+    // ================================
+    function baixarXLSXPaginaAtual() {
+      if (!dadosFiltrados || dadosFiltrados.length === 0) {
+        alert("Nenhum dado na página para exportar.");
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pagina");
+
+      XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
+    }
+
+    async function baixarXLSXTudoFiltrado() {
+      const limit = getLimit();
+
+      // garante filtros atualizados (caso a pessoa mexa e não clique aplicar)
+      lerFiltrosDaTela();
+
+      try {
+        setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
+
+        // 1) pega página 1 pra saber totalPages
+        const resp1 = await fetch(
+          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
+          { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+        );
+
+        if (!resp1.ok) throw new Error("Falha ao iniciar exportação");
+        const payload1 = await resp1.json();
+
+        const tp = Number(payload1.totalPages || 1);
+        const tudo = [...(payload1.items || [])];
+
+        setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
+
+        // 2) busca as páginas restantes
+        for (let page = 2; page <= tp; page++) {
+          const resp = await fetch(
+            `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+            { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+          );
+
+          if (!resp.ok) throw new Error(`Falha ao buscar página ${page}`);
+          const payload = await resp.json();
+
+          tudo.push(...(payload.items || []));
+          setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
+        }
+
+        if (tudo.length === 0) {
+          alert("Nenhum dado para exportar.");
+          setStatus("Nenhum registro encontrado para exportação.", "danger");
+          return;
+        }
+
+        // 3) gera XLSX
+        const ws = XLSX.utils.json_to_sheet(tudo);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Tudo");
+
+        XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
+
+        setStatus(`✅ Exportado com sucesso (${tudo.length} registros)`, "success");
+
+      } catch (err) {
+        setStatus("❌ Erro ao exportar: " + err.message, "danger");
+      }
+    }
+
+    // ================================
+    // EXCLUIR
+    // ================================
+    async function excluirSelecionados() {
+      const selecionados = [...document.querySelectorAll(".check-item:checked")]
+        .map(cb => cb.value);
+
+      if (selecionados.length === 0) {
+        alert("Selecione ao menos um registro.");
+        return;
+      }
+
+      const confirmar = confirm(
+        `⚠️ Tem certeza que deseja excluir ${selecionados.length} registro(s)?\n\nEssa ação NÃO pode ser desfeita.`
+      );
+      if (!confirmar) return;
+
+      try {
+        const resp = await fetch(`${BASE_URL}/excluir`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula")
+          },
+          body: JSON.stringify({ ids: selecionados })
+        });
+
+        if (!resp.ok) throw new Error("Erro ao excluir");
+
+        const resultado = await resp.json();
+        alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
+
+        // recarrega a página atual (se a página ficar vazia, volta 1 página)
+        await carregarPagina(paginaAtual);
+        if (dadosFiltrados.length === 0 && paginaAtual > 1) {
+          await carregarPagina(paginaAtual - 1);
+        }
+
+      } catch (err) {
+        alert("❌ Erro ao excluir registros");
+        console.error(err);
+      }
+    }
+
+    // ================================
+    // START
+    // ================================
+    document.addEventListener("DOMContentLoaded", async () => {
+      // padrão: página 1, limit 50, sem filtros
+      lerFiltrosDaTela();
+      await carregarPagina(1);
+    });
+
+    // se mudar "itens por página", volta pra página 1 automaticamente
+    document.getElementById("selectPorPagina").addEventListener("change", async () => {
+      lerFiltrosDaTela();
+      paginaAtual = 1;
+      await carregarPagina(1);
+    });
+  </script>
 </body>
 </html>
