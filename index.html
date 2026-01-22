@@ -246,6 +246,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     status.innerText = "❌ Erro ao carregar dados: " + err.message;
   }
 });
+
+    
     async function limparFiltros() {
   document.getElementById("filtroRegional").value = "";
   document.getElementById("filtroPolo").value = "";
@@ -338,50 +340,76 @@ async function aplicarFiltros() {
   const status = document.getElementById("status");
   const btn = document.getElementById("btnFiltrar");
 
-  const reg = document.getElementById("filtroRegional").value;
-  const polo = document.getElementById("filtroPolo").value;
-  const dtInicio = document.getElementById("dataInicio").value;
-  const dtFim = document.getElementById("dataFim").value;
-  const matriculaFiltro = document
-  .getElementById("filtroMatricula")
-  .value
-  .trim();  
+  const regional = document.getElementById("filtroRegional").value.trim();
+  const polo = document.getElementById("filtroPolo").value.trim();
+  const dataInicio = document.getElementById("dataInicio").value;
+  const dataFim = document.getElementById("dataFim").value;
+  const matricula = document.getElementById("filtroMatricula").value.trim();
 
-  // 🔄 FEEDBACK VISUAL
   status.className = "status-msg text-primary fw-bold";
   status.innerText = "🔄 Carregando dados...";
   btn.disabled = true;
   btn.innerHTML = "⏳ Aguarde...";
 
   try {
-    let url = "https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?";
-    const params = [];
+    dados = [];
+    dadosFiltrados = [];
 
-    if (dtInicio && dtFim) {
-      const [ano, mes] = dtInicio.split("-");
-      params.push(`mes=${mes}`, `ano=${ano}`);
+    let offset = 0;
+    const limit = 500;
+
+    // monta querystring só com o que existe
+    const buildQS = (offsetAtual) => {
+      const p = new URLSearchParams();
+      if (regional) p.set("regional", regional);
+      if (polo) p.set("polo", polo);
+      if (matricula) p.set("matricula", matricula);
+      if (dataInicio) p.set("dataInicio", dataInicio);
+      if (dataFim) p.set("dataFim", dataFim);
+      p.set("limit", String(limit));
+      p.set("offset", String(offsetAtual));
+      return p.toString();
+    };
+
+    while (true) {
+      const resp = await fetch(
+        `https://long-hall-0aaa.pedro-fillype.workers.dev/buscar-todos?${buildQS(offset)}`,
+        {
+          headers: {
+            "X-MATRICULA": localStorage.getItem("matricula")
+          }
+        }
+      );
+
+      if (!resp.ok) {
+        const t = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${t}`);
+      }
+
+      const payload = await resp.json();
+      const items = payload.items || [];
+
+      dados.push(...items);
+      dadosFiltrados = [...dados];
+
+      preencherTabela(dadosFiltrados);
+      status.innerText = `🔄 Carregando... ${dados.length} registro(s)`;
+
+      if (!payload.hasMore) break;
+      offset = payload.nextOffset;
     }
 
-    const resp = await fetch(url + params.join("&"), {
-      headers: {
-        "X-MATRICULA": localStorage.getItem("matricula")
-      }
-    });
+    status.className = "status-msg text-success fw-bold";
+    status.innerText = `✅ ${dados.length} registros encontrados`;
 
-    const dados = await resp.json();
-
-    dadosFiltrados = dados.filter(item => {
-  if (reg && item.regional !== reg) return false;
-  if (polo && item.polo !== polo) return false;
-
-  // 🔥 SÓ FILTRA MATRÍCULA SE TIVER VALOR
-  if (matriculaFiltro && item.matricula !== matriculaFiltro) return false;
-
-  if (dtInicio && item.datauso < dtInicio) return false;
-  if (dtFim && item.datauso > dtFim) return false;
-
-  return true;
-});
+  } catch (err) {
+    status.className = "status-msg text-danger fw-bold";
+    status.innerText = "❌ Erro ao buscar dados: " + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "🔍 Aplicar";
+  }
+}
 
     preencherTabela(dadosFiltrados);
 
