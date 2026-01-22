@@ -104,34 +104,36 @@
 
   </div>
 
-  <!-- LINHA 2 -->
-  <div class="row g-3 mt-1 align-items-end">
+  <!-- LINHA 2 (arrumada) -->
+<div class="row g-3 mt-2 align-items-end">
 
-    <div class="col-md-6">
-      <label class="form-label fw-bold">Matrícula</label>
-      <input
-        type="text"
-        id="filtroMatricula"
-        class="form-control"
-        placeholder="Digite a matrícula"
-      />
-    </div>
+  <!-- Matrícula -->
+  <div class="col-md-6">
+    <label class="form-label fw-bold">Matrícula</label>
+    <input
+      type="text"
+      id="filtroMatricula"
+      class="form-control"
+      placeholder="Digite a matrícula"
+    />
+  </div>
 
-    <div class="col-md-3">
-      <label class="form-label fw-bold">Itens por página</label>
-      <select id="selectPorPagina" class="form-select">
-        <option value="50" selected>50</option>
-        <option value="100">100</option>
-        <option value="200">200</option>
-      </select>
-      <small class="text-muted d-block mt-1">
-        Afeta paginação e “baixar tudo filtrado”.
-      </small>
-    </div>
+  <!-- Itens por página -->
+  <div class="col-md-2">
+    <label class="form-label fw-bold">Itens por página</label>
+    <select id="selectPorPagina" class="form-select">
+      <option value="50" selected>50</option>
+      <option value="100">100</option>
+      <option value="200">200</option>
+    </select>
+    <small class="text-muted d-block mt-1">
+      Afeta paginação e “baixar tudo”.
+    </small>
+  </div>
 
-    <!-- BOTÕES -->
-    <div class="col-md-3 d-flex justify-content-end gap-2 flex-wrap mt-4">
-
+  <!-- Botões (barra de ações) -->
+  <div class="col-md-4">
+    <div class="d-flex justify-content-end gap-2">
       <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
         🔍 Aplicar
       </button>
@@ -151,11 +153,12 @@
       <button class="btn btn-danger" onclick="excluirSelecionados()">
         🗑️ Excluir
       </button>
-
     </div>
   </div>
 
 </div>
+  </div>
+
 
     <!-- 📄 PAGINAÇÃO -->
     <div class="pager">
