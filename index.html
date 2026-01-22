@@ -70,6 +70,7 @@
 
   <!-- LINHA 1 -->
   <div class="row g-3">
+    
     <div class="col-md-3">
       <label class="fw-bold">Filtrar por Regional</label>
       <select id="filtroRegional" class="form-select">
@@ -100,11 +101,13 @@
       <label class="fw-bold">Data Final</label>
       <input id="dataFim" type="date" class="form-control">
     </div>
+
   </div>
 
   <!-- LINHA 2 -->
-  <div class="row g-3 mt-0 align-items-end">
-    <div class="col-md-4">
+  <div class="row g-3 mt-1 align-items-end">
+
+    <div class="col-md-6">
       <label class="form-label fw-bold">Matrícula</label>
       <input
         type="text"
@@ -114,7 +117,7 @@
       />
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
       <label class="form-label fw-bold">Itens por página</label>
       <select id="selectPorPagina" class="form-select">
         <option value="50" selected>50</option>
@@ -122,23 +125,36 @@
         <option value="200">200</option>
       </select>
       <small class="text-muted d-block mt-1">
-        Afeta paginação e exportação “tudo filtrado”.
+        Afeta paginação e “baixar tudo filtrado”.
       </small>
     </div>
 
-    <!-- espaço pra ficar alinhado e não "puxar" botões -->
-    <div class="col-md-4"></div>
+    <!-- BOTÕES -->
+    <div class="col-md-3 d-flex justify-content-end gap-2 flex-wrap mt-4">
+
+      <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
+        🔍 Aplicar
+      </button>
+
+      <button class="btn btn-secondary" onclick="limparFiltros()">
+        ♻️ Limpar
+      </button>
+
+      <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">
+        ⬇️ Página
+      </button>
+
+      <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">
+        ⬇️ Tudo
+      </button>
+
+      <button class="btn btn-danger" onclick="excluirSelecionados()">
+        🗑️ Excluir
+      </button>
+
+    </div>
   </div>
 
-  <div class="d-flex justify-content-end mt-3 gap-2 flex-wrap">
-    <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
-    <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
-
-    <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Baixar página</button>
-    <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo filtrado</button>
-
-    <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
-  </div>
 </div>
 
     <!-- 📄 PAGINAÇÃO -->
