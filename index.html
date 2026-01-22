@@ -66,65 +66,80 @@
     <p id="status" class="status-msg text-danger"></p>
 
     <!-- 🔎 FILTROS -->
-    <div class="filter-card mb-4">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label class="fw-bold">Filtrar por Regional</label>
-          <select id="filtroRegional" class="form-select">
-            <option value="">Todas</option>
-            <option>LESTE</option>
-            <option>CENTRO</option>
-            <option>OESTE</option>
-          </select>
-        </div>
+<div class="filter-card mb-4">
 
-        <div class="col-md-3">
-          <label class="fw-bold">Filtrar por Polo</label>
-          <select id="filtroPolo" class="form-select">
-            <option value="">Todos</option>
-            <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
-            <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
-            <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
-            <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <label class="fw-bold">Data Inicial</label>
-          <input id="dataInicio" type="date" class="form-control" />
-        </div>
-
-        <div class="col-md-3">
-          <label class="fw-bold">Data Final</label>
-          <input id="dataFim" type="date" class="form-control" />
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Matrícula</label>
-          <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
-        </div>
-
-        <div class="col-md-3">
-          <label class="form-label fw-bold">Itens por página</label>
-          <select id="selectPorPagina" class="form-select">
-            <option value="50" selected>50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-          </select>
-          <div class="muted mt-1">Afeta paginação e exportação “tudo filtrado”.</div>
-        </div>
-      </div>
-
-      <div class="d-flex justify-content-end mt-3 gap-2 flex-wrap">
-        <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
-        <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
-
-        <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Baixar página</button>
-        <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo filtrado</button>
-
-        <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
-      </div>
+  <!-- LINHA 1 -->
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="fw-bold">Filtrar por Regional</label>
+      <select id="filtroRegional" class="form-select">
+        <option value="">Todas</option>
+        <option>LESTE</option>
+        <option>CENTRO</option>
+        <option>OESTE</option>
+      </select>
     </div>
+
+    <div class="col-md-3">
+      <label class="fw-bold">Filtrar por Polo</label>
+      <select id="filtroPolo" class="form-select">
+        <option value="">Todos</option>
+        <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
+        <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
+        <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
+        <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="fw-bold">Data Inicial</label>
+      <input id="dataInicio" type="date" class="form-control">
+    </div>
+
+    <div class="col-md-3">
+      <label class="fw-bold">Data Final</label>
+      <input id="dataFim" type="date" class="form-control">
+    </div>
+  </div>
+
+  <!-- LINHA 2 -->
+  <div class="row g-3 mt-0 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label fw-bold">Matrícula</label>
+      <input
+        type="text"
+        id="filtroMatricula"
+        class="form-control"
+        placeholder="Digite a matrícula"
+      />
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label fw-bold">Itens por página</label>
+      <select id="selectPorPagina" class="form-select">
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+      </select>
+      <small class="text-muted d-block mt-1">
+        Afeta paginação e exportação “tudo filtrado”.
+      </small>
+    </div>
+
+    <!-- espaço pra ficar alinhado e não "puxar" botões -->
+    <div class="col-md-4"></div>
+  </div>
+
+  <div class="d-flex justify-content-end mt-3 gap-2 flex-wrap">
+    <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
+    <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
+
+    <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Baixar página</button>
+    <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo filtrado</button>
+
+    <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir selecionados</button>
+  </div>
+</div>
 
     <!-- 📄 PAGINAÇÃO -->
     <div class="pager">
