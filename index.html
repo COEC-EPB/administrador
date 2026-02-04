@@ -240,6 +240,13 @@
 
   <script>
 
+    function formatarDataBR(dataISO) {
+  if (!dataISO) return "";
+  const d = new Date(dataISO);
+  if (isNaN(d)) return dataISO; // caso venha algo inesperado
+  return d.toLocaleDateString("pt-BR");
+}
+
     // Selecionar/desselecionar todos os itens da PÁGINA ATUAL (os que estão filtrados no momento)
 document.getElementById("checkTodosFiltrados").addEventListener("change", (e) => {
   const checked = e.target.checked;
@@ -347,7 +354,7 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
             <td>${item.regional ?? ""}</td>
             <td>${item.polo ?? ""}</td>
             <td>${item.matricula ?? ""}</td>
-            <td>${item.datauso ?? ""}</td>
+            <td>${formatarDataBR(item.datauso)}</td>
             <td>${item.tiporefeicao ?? ""}</td>
             <td>${item.horario ?? ""}</td>
             <td>${item.localidade ?? ""}</td>
