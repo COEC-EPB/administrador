@@ -9,42 +9,133 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
   <style>
-    :root{
-      --energisa-blue:#0097CE;
-      --energisa-blue-dark:#0079a6;
-      --energisa-orange:#F36F21;
-    }
-    body{ background:#f4f6f9; font-family:'Segoe UI',sans-serif; }
-    .topbar{
-      background:var(--energisa-blue); color:#fff; padding:15px;
-      display:flex; justify-content:space-between; align-items:center;
-      border-bottom:4px solid var(--energisa-orange);
-    }
-    .logout-btn{
-      background:var(--energisa-orange); border:none; color:#fff;
-      padding:8px 15px; border-radius:6px; font-weight:bold; transition:.3s;
-    }
-    .logout-btn:hover{ background:#d95f1c; }
-    .container{ max-width:97%; margin-top:25px; }
-    .table-container{
-      max-height:750px; overflow:auto;
-      border:2px solid #ddd; border-radius:6px;
-      background:#fff;
-    }
-    table td, table th{ padding:10px; font-size:.90rem; white-space:nowrap; }
-    .filter-card{
-      padding:20px; background:#fff; border-radius:8px;
-      box-shadow:0 2px 5px rgb(0 0 0 / 0.15);
-    }
-    .pager{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px 0;
-    }
-    .pager .left, .pager .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .muted{ color:#6c757d; font-size:.9rem; }
-    .status-msg{ margin:0 0 12px; }
-    .actions-wrap{ gap:10px; display:flex; justify-content-end; align-items:center; flex-wrap:wrap; }
-  </style>
+  :root{
+    --energisa-blue:#0097CE;
+    --energisa-blue-dark:#0079a6;
+    --energisa-orange:#F36F21;
+    --card:#ffffff;
+    --line:#e9eef3;
+    --text:#1f2a37;
+    --muted:#6b7280;
+  }
+
+  body{ background:#f4f6f9; font-family:'Segoe UI',sans-serif; color:var(--text); }
+  .container{ max-width:97%; margin-top:25px; }
+
+  /* filtro card mais elegante */
+  .filter-card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 10px 30px rgba(16,24,40,.06);
+  }
+
+  .filter-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+
+  .filter-title h6{
+    margin:0;
+    font-weight:800;
+    letter-spacing:.2px;
+  }
+
+  .filter-sub{
+    margin:0;
+    color: var(--muted);
+    font-size:.88rem;
+  }
+
+  .field-label{
+    font-weight:700;
+    font-size:.88rem;
+    margin-bottom:6px;
+  }
+
+  .form-control, .form-select{
+    border-radius:10px;
+    border:1px solid #dbe3ea;
+    padding:10px 12px;
+    box-shadow:none !important;
+  }
+  .form-control:focus, .form-select:focus{
+    border-color: rgba(0,151,206,.55);
+    outline: none;
+    box-shadow: 0 0 0 .2rem rgba(0,151,206,.15) !important;
+  }
+
+  /* divisores internos */
+  .divider{
+    height:1px;
+    background: var(--line);
+    margin: 12px 0 16px;
+  }
+
+  /* área de ações */
+  .actions-wrap{
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .btn{
+    border-radius:10px !important;
+    font-weight:700;
+    padding:10px 12px;
+    white-space:nowrap;
+  }
+
+  .btn-primary{
+    background: var(--energisa-blue);
+    border-color: var(--energisa-blue);
+  }
+  .btn-primary:hover{
+    background: var(--energisa-blue-dark);
+    border-color: var(--energisa-blue-dark);
+  }
+
+  /* toggles bonitos */
+  .toggle{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fafbfc;
+  }
+  .toggle .form-check-input{
+    width: 44px;
+    height: 22px;
+    margin:0;
+    cursor:pointer;
+  }
+  .toggle .form-check-label{
+    margin:0;
+    font-weight:700;
+    font-size:.90rem;
+    cursor:pointer;
+  }
+
+  /* microtexto */
+  .help{
+    color: var(--muted);
+    font-size:.82rem;
+    margin-top:6px;
+  }
+
+  /* responsivo: botões sempre abaixo em telas menores */
+  @media (max-width: 992px){
+    .actions-wrap{ justify-content:flex-start; }
+  }
+</style>
 </head>
 
 <body>
@@ -64,78 +155,109 @@
     <p id="status" class="status-msg text-danger"></p>
 
     <div class="filter-card mb-4">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="fw-bold">Filtrar por Regional</label>
-          <select id="filtroRegional" class="form-select">
-            <option value="">Todas</option>
-            <option>LESTE</option>
-            <option>CENTRO</option>
-            <option>OESTE</option>
-          </select>
-        </div>
 
-        <div class="col-md-3">
-          <label class="fw-bold">Filtrar por Polo</label>
-          <select id="filtroPolo" class="form-select">
-            <option value="">Todos</option>
-            <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
-            <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
-            <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
-            <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
-          </select>
-        </div>
+  <div class="filter-title">
+    <div>
+      <h6>🔎 Filtros</h6>
+      <p class="filter-sub">Use os filtros e clique em <b>Aplicar</b>. Por padrão não mostra solicitados.</p>
+    </div>
+  </div>
 
-        <div class="col-md-3">
-          <label class="fw-bold">Data Inicial</label>
-          <input id="dataInicio" type="date" class="form-control">
-        </div>
+  <!-- LINHA 1 -->
+  <div class="row g-3">
+    <div class="col-lg-3 col-md-6">
+      <div class="field-label">Regional</div>
+      <select id="filtroRegional" class="form-select">
+        <option value="">Todas</option>
+        <option>LESTE</option>
+        <option>CENTRO</option>
+        <option>OESTE</option>
+      </select>
+    </div>
 
-        <div class="col-md-3">
-          <label class="fw-bold">Data Final</label>
-          <input id="dataFim" type="date" class="form-control">
-        </div>
-      </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="field-label">Polo</div>
+      <select id="filtroPolo" class="form-select">
+        <option value="">Todos</option>
+        <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
+        <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
+        <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
+        <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
+      </select>
+    </div>
 
-      <div class="row g-3 mt-2 align-items-end">
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Matrícula</label>
-          <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
-        </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="field-label">Data inicial</div>
+      <input id="dataInicio" type="date" class="form-control">
+    </div>
 
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Itens por página</label>
-          <select id="selectPorPagina" class="form-select">
-            <option value="50" selected>50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-          </select>
-          <small class="text-muted d-block mt-1">Afeta paginação e “baixar tudo”.</small>
-        </div>
+    <div class="col-lg-3 col-md-6">
+      <div class="field-label">Data final</div>
+      <input id="dataFim" type="date" class="form-control">
+    </div>
+  </div>
 
-        <div class="col-md-4">
-          <div class="actions-wrap">
-            <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
-            <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
-            <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Página</button>
-            <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar Tudo</button>
+  <div class="divider"></div>
 
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="checkTodosFiltrados">
-              <label class="form-check-label fw-bold" for="checkTodosFiltrados">Selecionar TODOS filtrados</label>
-            </div>
+  <!-- LINHA 2 -->
+  <div class="row g-3 align-items-end">
+    <div class="col-lg-6 col-md-12">
+      <div class="field-label">Matrícula</div>
+      <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
+      <div class="help">Se vazio, ignora o filtro de matrícula.</div>
+    </div>
 
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="mostrarSolicitados">
-              <label class="form-check-label fw-bold" for="mostrarSolicitados">Mostrar solicitados</label>
-            </div>
+    <div class="col-lg-2 col-md-6">
+      <div class="field-label">Itens por página</div>
+      <select id="selectPorPagina" class="form-select">
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+      </select>
+      <div class="help">Afeta paginação e “baixar tudo”.</div>
+    </div>
 
-            <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">✅ Marcar como solicitado</button>
-            <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir</button>
-          </div>
-        </div>
+    <div class="col-lg-4 col-md-12">
+      <div class="actions-wrap">
+
+        <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
+          🔍 Aplicar
+        </button>
+
+        <button class="btn btn-outline-secondary" onclick="limparFiltros()">
+          ♻️ Limpar
+        </button>
+
+        <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">
+          ⬇️ Página
+        </button>
+
+        <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">
+          ⬇️ Baixar tudo
+        </button>
+
+        <label class="toggle">
+          <input class="form-check-input" type="checkbox" id="checkTodosFiltrados">
+          <span class="form-check-label">Selecionar filtrados</span>
+        </label>
+
+        <label class="toggle">
+          <input class="form-check-input" type="checkbox" id="mostrarSolicitados">
+          <span class="form-check-label">Mostrar solicitados</span>
+        </label>
+
+        <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">
+          ✅ Marcar como solicitado
+        </button>
+
+        <button class="btn btn-danger" onclick="excluirSelecionados()">
+          🗑️ Excluir
+        </button>
+
       </div>
     </div>
+  </div>
+</div>
 
     <div class="pager">
       <div class="left">
