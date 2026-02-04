@@ -42,11 +42,12 @@
     }
     .pager .left, .pager .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .muted{ color:#6c757d; font-size:.9rem; }
+    .status-msg{ margin:0 0 12px; }
+    .actions-wrap{ gap:10px; display:flex; justify-content-end; align-items:center; flex-wrap:wrap; }
   </style>
 </head>
 
 <body>
-  <!-- 🔵 BARRA SUPERIOR -->
   <div class="topbar">
     <h4 class="m-0">Painel do Administrador - Energisa</h4>
     <div class="d-flex align-items-center gap-2">
@@ -54,120 +55,94 @@
          class="btn btn-light fw-bold" style="border-radius:6px;">
         ⬅️ Voltar
       </a>
-
       <span id="userInfo" class="me-3 fw-bold"></span>
-
       <button class="logout-btn" onclick="logout()">Sair</button>
     </div>
   </div>
 
   <div class="container">
-
     <p id="status" class="status-msg text-danger"></p>
 
-    <!-- 🔎 FILTROS -->
-<div class="filter-card mb-4">
+    <div class="filter-card mb-4">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="fw-bold">Filtrar por Regional</label>
+          <select id="filtroRegional" class="form-select">
+            <option value="">Todas</option>
+            <option>LESTE</option>
+            <option>CENTRO</option>
+            <option>OESTE</option>
+          </select>
+        </div>
 
-  <!-- LINHA 1 -->
-  <div class="row g-3">
-    
-    <div class="col-md-3">
-      <label class="fw-bold">Filtrar por Regional</label>
-      <select id="filtroRegional" class="form-select">
-        <option value="">Todas</option>
-        <option>LESTE</option>
-        <option>CENTRO</option>
-        <option>OESTE</option>
-      </select>
+        <div class="col-md-3">
+          <label class="fw-bold">Filtrar por Polo</label>
+          <select id="filtroPolo" class="form-select">
+            <option value="">Todos</option>
+            <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
+            <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
+            <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
+            <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="fw-bold">Data Inicial</label>
+          <input id="dataInicio" type="date" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+          <label class="fw-bold">Data Final</label>
+          <input id="dataFim" type="date" class="form-control">
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Matrícula</label>
+          <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Itens por página</label>
+          <select id="selectPorPagina" class="form-select">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+          <small class="text-muted d-block mt-1">Afeta paginação e “baixar tudo”.</small>
+        </div>
+
+        <div class="col-md-4">
+          <div class="actions-wrap">
+            <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">🔍 Aplicar</button>
+            <button class="btn btn-secondary" onclick="limparFiltros()">♻️ Limpar</button>
+            <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Página</button>
+            <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar Tudo</button>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="checkTodosFiltrados">
+              <label class="form-check-label fw-bold" for="checkTodosFiltrados">Selecionar TODOS filtrados</label>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="mostrarSolicitados">
+              <label class="form-check-label fw-bold" for="mostrarSolicitados">Mostrar solicitados</label>
+            </div>
+
+            <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">✅ Marcar como solicitado</button>
+            <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="col-md-3">
-      <label class="fw-bold">Filtrar por Polo</label>
-      <select id="filtroPolo" class="form-select">
-        <option value="">Todos</option>
-        <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
-        <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
-        <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
-        <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
-      </select>
-    </div>
-
-    <div class="col-md-3">
-      <label class="fw-bold">Data Inicial</label>
-      <input id="dataInicio" type="date" class="form-control">
-    </div>
-
-    <div class="col-md-3">
-      <label class="fw-bold">Data Final</label>
-      <input id="dataFim" type="date" class="form-control">
-    </div>
-
-  </div>
-
-  <!-- LINHA 2 (arrumada) -->
-<div class="row g-3 mt-2 align-items-end">
-
-  <!-- Matrícula -->
-  <div class="col-md-6">
-    <label class="form-label fw-bold">Matrícula</label>
-    <input
-      type="text"
-      id="filtroMatricula"
-      class="form-control"
-      placeholder="Digite a matrícula"
-    />
-  </div>
-
-  <!-- Itens por página -->
-  <div class="col-md-2">
-    <label class="form-label fw-bold">Itens por página</label>
-    <select id="selectPorPagina" class="form-select">
-      <option value="50" selected>50</option>
-      <option value="100">100</option>
-      <option value="200">200</option>
-    </select>
-    <small class="text-muted d-block mt-1">
-      Afeta paginação e “baixar tudo”.
-    </small>
-  </div>
-
-  <!-- Botões (barra de ações) -->
-  <div class="col-md-4">
-    <div class="d-flex justify-content-end gap-2">
-      <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
-        🔍 Aplicar
-      </button>
-
-      <button class="btn btn-secondary" onclick="limparFiltros()">
-        ♻️ Limpar
-      </button>
-
-      <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">
-        ⬇️ Página
-      </button>
-
-      <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">
-        ⬇️ Tudo
-      </button>
-
-      <button class="btn btn-danger" onclick="excluirSelecionados()">
-        🗑️ Excluir
-      </button>
-    </div>
-  </div>
-
-</div>
-  </div>
-
-
-    <!-- 📄 PAGINAÇÃO -->
     <div class="pager">
       <div class="left">
         <button id="btnAnterior" class="btn btn-outline-primary" onclick="paginaAnterior()">⬅️ Anterior</button>
         <button id="btnProximo" class="btn btn-outline-primary" onclick="proximaPagina()">Próximo ➡️</button>
         <span class="muted" id="infoPaginacao">Página 1</span>
       </div>
-
       <div class="right">
         <label class="muted m-0">Ir para página:</label>
         <input id="inputIrPagina" type="number" min="1" class="form-control" style="width:110px" />
@@ -175,7 +150,6 @@
       </div>
     </div>
 
-    <!-- 🧾 TABELA -->
     <div class="table-container">
       <table class="table table-bordered table-striped table-hover mb-0">
         <thead class="table-dark">
@@ -195,14 +169,11 @@
   </div>
 
   <script>
-    // ================================
-    // 🔐 BLOQUEIO DE ADMIN
-    // ================================
     const ADMINS = ["3080117", "3056107","3001621", "10267","10436","9170","11338","3075670","9622",
       "3049298","10267","11148","3049314","9428","3089287","6156","10349","279091","9835","8263","10432","10267",
       "8981","3049298","3075549"];
-    const matriculaLogin = localStorage.getItem("matricula");
 
+    const matriculaLogin = localStorage.getItem("matricula");
     if (!matriculaLogin) window.location.href = "https://coec-epb.github.io/login/";
     if (!ADMINS.includes(matriculaLogin)) {
       alert("Acesso negado!");
@@ -215,32 +186,23 @@
       window.location.href = "https://coec-epb.github.io/login/";
     }
 
-    // ================================
-    // CONFIG
-    // ================================
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
-    // Estado da tela
     let paginaAtual = 1;
     let totalPages = 1;
     let totalItems = 0;
-
-    // Itens da página (o que aparece na tabela)
     let dadosFiltrados = [];
 
-    // Últimos filtros aplicados (persistem na paginação)
     const filtros = {
       regional: "",
       polo: "",
       matricula: "",
       dataInicio: "",
       dataFim: "",
-      limit: 50
+      limit: 50,
+      mostrarSolicitados: false
     };
 
-    // ================================
-    // HELPERS
-    // ================================
     function setStatus(text, type="primary") {
       const status = document.getElementById("status");
       status.className = "status-msg fw-bold text-" + type;
@@ -259,9 +221,10 @@
       filtros.dataFim    = document.getElementById("dataFim").value;
       filtros.matricula  = document.getElementById("filtroMatricula").value.trim();
       filtros.limit      = getLimit();
+      filtros.mostrarSolicitados = document.getElementById("mostrarSolicitados").checked;
     }
 
-    function montarQS(page) {
+    function montarQS(page, semPaginacao=false) {
       const p = new URLSearchParams();
       if (filtros.regional)   p.set("regional", filtros.regional);
       if (filtros.polo)       p.set("polo", filtros.polo);
@@ -269,9 +232,13 @@
       if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
       if (filtros.dataFim)    p.set("dataFim", filtros.dataFim);
 
-      p.set("page", String(page));
-      p.set("limit", String(filtros.limit));
+      // ✅ solicitado
+      if (filtros.mostrarSolicitados) p.set("mostrarSolicitados", "1");
 
+      if (!semPaginacao) {
+        p.set("page", String(page));
+        p.set("limit", String(filtros.limit));
+      }
       return p.toString();
     }
 
@@ -284,9 +251,6 @@
       document.getElementById("checkTodos").checked = false;
     }
 
-    // ================================
-    // TABELA
-    // ================================
     function preencherTabela(lista) {
       const tabela = document.getElementById("tabela");
       tabela.innerHTML = "";
@@ -321,17 +285,6 @@
       document.querySelectorAll(".check-item").forEach(cb => cb.checked = checkbox.checked);
     }
 
-    // ================================
-    // BUSCA (SERVER-SIDE)
-    // Esperado do Worker:
-    // {
-    //   items: [...],
-    //   page: 1,
-    //   limit: 50,
-    //   totalItems: 1234,
-    //   totalPages: 25
-    // }
-    // ================================
     async function carregarPagina(page) {
       const btnFiltrar = document.getElementById("btnFiltrar");
       btnFiltrar.disabled = true;
@@ -360,7 +313,6 @@
         atualizarUIpaginacao();
 
         setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
-
       } catch (err) {
         setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
       } finally {
@@ -368,9 +320,6 @@
       }
     }
 
-    // ================================
-    // AÇÕES DE FILTRO / PAGINAÇÃO
-    // ================================
     async function aplicarFiltros() {
       const btn = document.getElementById("btnFiltrar");
       btn.disabled = true;
@@ -393,6 +342,8 @@
       document.getElementById("dataFim").value = "";
       document.getElementById("filtroMatricula").value = "";
       document.getElementById("selectPorPagina").value = "50";
+      document.getElementById("mostrarSolicitados").checked = false;
+      document.getElementById("checkTodosFiltrados").checked = false;
 
       lerFiltrosDaTela();
       paginaAtual = 1;
@@ -400,15 +351,11 @@
     }
 
     async function proximaPagina() {
-      if (paginaAtual < totalPages) {
-        await carregarPagina(paginaAtual + 1);
-      }
+      if (paginaAtual < totalPages) await carregarPagina(paginaAtual + 1);
     }
 
     async function paginaAnterior() {
-      if (paginaAtual > 1) {
-        await carregarPagina(paginaAtual - 1);
-      }
+      if (paginaAtual > 1) await carregarPagina(paginaAtual - 1);
     }
 
     async function irParaPagina() {
@@ -419,55 +366,42 @@
       await carregarPagina(destino);
     }
 
-    // ================================
-    // EXPORTAÇÃO XLSX
-    // ================================
     function baixarXLSXPaginaAtual() {
       if (!dadosFiltrados || dadosFiltrados.length === 0) {
         alert("Nenhum dado na página para exportar.");
         return;
       }
-
       const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Pagina");
-
       XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
     }
 
     async function baixarXLSXTudoFiltrado() {
-      const limit = getLimit();
-
-      // garante filtros atualizados (caso a pessoa mexa e não clique aplicar)
       lerFiltrosDaTela();
 
       try {
         setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        // 1) pega página 1 pra saber totalPages
         const resp1 = await fetch(
           `${BASE_URL}/buscar-todos?${montarQS(1)}`,
           { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
         );
-
         if (!resp1.ok) throw new Error("Falha ao iniciar exportação");
-        const payload1 = await resp1.json();
 
+        const payload1 = await resp1.json();
         const tp = Number(payload1.totalPages || 1);
         const tudo = [...(payload1.items || [])];
 
         setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
 
-        // 2) busca as páginas restantes
         for (let page = 2; page <= tp; page++) {
           const resp = await fetch(
             `${BASE_URL}/buscar-todos?${montarQS(page)}`,
             { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
           );
-
           if (!resp.ok) throw new Error(`Falha ao buscar página ${page}`);
           const payload = await resp.json();
-
           tudo.push(...(payload.items || []));
           setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
         }
@@ -478,23 +412,17 @@
           return;
         }
 
-        // 3) gera XLSX
         const ws = XLSX.utils.json_to_sheet(tudo);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Tudo");
-
         XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
 
         setStatus(`✅ Exportado com sucesso (${tudo.length} registros)`, "success");
-
       } catch (err) {
         setStatus("❌ Erro ao exportar: " + err.message, "danger");
       }
     }
 
-    // ================================
-    // EXCLUIR
-    // ================================
     async function excluirSelecionados() {
       const selecionados = [...document.querySelectorAll(".check-item:checked")]
         .map(cb => cb.value);
@@ -524,29 +452,94 @@
         const resultado = await resp.json();
         alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
 
-        // recarrega a página atual (se a página ficar vazia, volta 1 página)
         await carregarPagina(paginaAtual);
         if (dadosFiltrados.length === 0 && paginaAtual > 1) {
           await carregarPagina(paginaAtual - 1);
         }
-
       } catch (err) {
         alert("❌ Erro ao excluir registros");
         console.error(err);
       }
     }
 
-    // ================================
-    // START
-    // ================================
+    // ✅ NOVO: marcar como solicitado (por IDs ou por filtro)
+    async function marcarFiltradosComoSolicitado() {
+      lerFiltrosDaTela();
+
+      const marcarTudo = document.getElementById("checkTodosFiltrados").checked;
+
+      if (marcarTudo) {
+        const confirmar = confirm("Marcar TODOS os registros filtrados como SOLICITADO? (todas as páginas)");
+        if (!confirmar) return;
+
+        try {
+          setStatus("🔄 Marcando todos os filtrados como solicitado...", "primary");
+
+          const resp = await fetch(`${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
+            method: "POST",
+            headers: { "X-MATRICULA": localStorage.getItem("matricula") }
+          });
+
+          const data = await resp.json().catch(() => ({}));
+          if (!resp.ok) throw new Error(data?.erro || "Falha ao marcar filtrados");
+
+          alert(`✅ Atualizados: ${data.atualizados ?? 0}`);
+          await carregarPagina(1);
+        } catch (err) {
+          alert("❌ Erro: " + err.message);
+          setStatus("❌ Erro ao marcar filtrados: " + err.message, "danger");
+        }
+        return;
+      }
+
+      // senão: marca só os selecionados da tabela
+      const selecionados = [...document.querySelectorAll(".check-item:checked")]
+        .map(cb => cb.value);
+
+      if (selecionados.length === 0) {
+        alert("Selecione registros na tabela OU marque 'Selecionar TODOS filtrados'.");
+        return;
+      }
+
+      const confirmar = confirm(`Marcar ${selecionados.length} registro(s) como SOLICITADO?`);
+      if (!confirmar) return;
+
+      try {
+        setStatus("🔄 Marcando selecionados como solicitado...", "primary");
+
+        const resp = await fetch(`${BASE_URL}/marcar-solicitado`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula")
+          },
+          body: JSON.stringify({ ids: selecionados })
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data?.erro || "Falha ao marcar selecionados");
+
+        alert(`✅ Atualizados: ${data.atualizados ?? 0}`);
+        await carregarPagina(paginaAtual);
+      } catch (err) {
+        alert("❌ Erro: " + err.message);
+        setStatus("❌ Erro ao marcar selecionados: " + err.message, "danger");
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
-      // padrão: página 1, limit 50, sem filtros
       lerFiltrosDaTela();
       await carregarPagina(1);
     });
 
-    // se mudar "itens por página", volta pra página 1 automaticamente
     document.getElementById("selectPorPagina").addEventListener("change", async () => {
+      lerFiltrosDaTela();
+      paginaAtual = 1;
+      await carregarPagina(1);
+    });
+
+    // ✅ quando marcar/desmarcar "mostrar solicitados", recarrega
+    document.getElementById("mostrarSolicitados").addEventListener("change", async () => {
       lerFiltrosDaTela();
       paginaAtual = 1;
       await carregarPagina(1);
