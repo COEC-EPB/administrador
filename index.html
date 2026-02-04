@@ -454,61 +454,83 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
     }
 
     function baixarXLSXPaginaAtual() {
-      if (!dadosFiltrados || dadosFiltrados.length === 0) {
-        alert("Nenhum dado na página para exportar.");
-        return;
-      }
-      const ws = XLSX.utils.json_to_sheet(dadosFiltrados);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Pagina");
-      XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
+  if (!dadosFiltrados || dadosFiltrados.length === 0) {
+    alert("Nenhum dado na página para exportar.");
+    return;
+  }
+
+  const dadosExport = dadosFiltrados.map(item => ({
+    ...item,
+    datauso: formatarDataBR(item.datauso)
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(dadosExport);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Pagina");
+
+  XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
+}
+
+    function formatarDataBR(dataISO) {
+  if (!dataISO) return "";
+  const d = new Date(dataISO);
+  if (isNaN(d)) return dataISO;
+  return d.toLocaleDateString("pt-BR");
+}
+
+async function baixarXLSXTudoFiltrado() {
+  lerFiltrosDaTela();
+
+  try {
+    setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
+
+    const resp1 = await fetch(
+      `${BASE_URL}/buscar-todos?${montarQS(1)}`,
+      { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+    );
+    if (!resp1.ok) throw new Error("Falha ao iniciar exportação");
+
+    const payload1 = await resp1.json();
+    const tp = Number(payload1.totalPages || 1);
+    const tudo = [...(payload1.items || [])];
+
+    setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
+
+    for (let page = 2; page <= tp; page++) {
+      const resp = await fetch(
+        `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+        { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+      );
+      if (!resp.ok) throw new Error(`Falha ao buscar página ${page}`);
+
+      const payload = await resp.json();
+      tudo.push(...(payload.items || []));
+      setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
     }
 
-    async function baixarXLSXTudoFiltrado() {
-      lerFiltrosDaTela();
-
-      try {
-        setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
-
-        const resp1 = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
-          { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
-        );
-        if (!resp1.ok) throw new Error("Falha ao iniciar exportação");
-
-        const payload1 = await resp1.json();
-        const tp = Number(payload1.totalPages || 1);
-        const tudo = [...(payload1.items || [])];
-
-        setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
-
-        for (let page = 2; page <= tp; page++) {
-          const resp = await fetch(
-            `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-            { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
-          );
-          if (!resp.ok) throw new Error(`Falha ao buscar página ${page}`);
-          const payload = await resp.json();
-          tudo.push(...(payload.items || []));
-          setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
-        }
-
-        if (tudo.length === 0) {
-          alert("Nenhum dado para exportar.");
-          setStatus("Nenhum registro encontrado para exportação.", "danger");
-          return;
-        }
-
-        const ws = XLSX.utils.json_to_sheet(tudo);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Tudo");
-        XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
-
-        setStatus(`✅ Exportado com sucesso (${tudo.length} registros)`, "success");
-      } catch (err) {
-        setStatus("❌ Erro ao exportar: " + err.message, "danger");
-      }
+    if (tudo.length === 0) {
+      alert("Nenhum dado para exportar.");
+      setStatus("Nenhum registro encontrado para exportação.", "danger");
+      return;
     }
+
+    // ✅ Formata a datauso para dd/mm/aaaa antes de gerar o XLSX
+    const tudoFormatado = tudo.map(item => ({
+      ...item,
+      datauso: formatarDataBR(item.datauso)
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(tudoFormatado);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tudo");
+    XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
+
+    setStatus(`✅ Exportado com sucesso (${tudoFormatado.length} registros)`, "success");
+  } catch (err) {
+    setStatus("❌ Erro ao exportar: " + err.message, "danger");
+  }
+}
+
 
     async function excluirSelecionados() {
       const selecionados = [...document.querySelectorAll(".check-item:checked")]
