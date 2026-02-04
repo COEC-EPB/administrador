@@ -230,7 +230,7 @@
             <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
             <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
             <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
-            <th>Nº ADD</th><th>Observação</th>
+            <th>Nº ADD</th><th>Solicitado</th>
           </tr>
         </thead>
         <tbody id="tabela"></tbody>
@@ -355,7 +355,6 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
             <td>${item.sequencia ?? ""}</td>
             <td>${item.osrrss ?? ""}</td>
             <td>${item.numeroadd ?? ""}</td>
-            <td>${item.observacao ?? ""}</td>
             <td>${item.solicitado ?? ""}</td>
           </tr>
         `;
