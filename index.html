@@ -14,81 +14,167 @@
       --energisa-blue-dark:#0079a6;
       --energisa-orange:#F36F21;
     }
-    body{ background:#f4f6f9; font-family:'Segoe UI',sans-serif; }
-    
-    .topbar{
-      background:var(--energisa-blue); color:#fff; padding:15px;
-      display:flex; justify-content:space-between; align-items:center;
-      border-bottom:4px solid var(--energisa-orange);
-    }
-    .logout-btn{
-      background:var(--energisa-orange); border:none; color:#fff;
-      padding:8px 15px; border-radius:6px; font-weight:bold; transition:.3s;
-    }
-    .logout-btn:hover{ background:#d95f1c; }
-    
-    .container{ max-width:97%; margin-top:25px; }
 
-    /* CARD DE FILTROS */
+    body{
+      background:#f4f6f9;
+      font-family:'Segoe UI',sans-serif;
+    }
+
+    .topbar{
+      background:var(--energisa-blue);
+      color:#fff;
+      padding:15px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:4px solid var(--energisa-orange);
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .logout-btn{
+      background:var(--energisa-orange);
+      border:none;
+      color:#fff;
+      padding:8px 15px;
+      border-radius:6px;
+      font-weight:bold;
+      transition:.3s;
+    }
+
+    .logout-btn:hover{
+      background:#d95f1c;
+    }
+
+    .container{
+      max-width:97%;
+      margin-top:25px;
+    }
+
     .filter-card{
-      padding:20px; background:#fff; border-radius:10px;
+      padding:20px;
+      background:#fff;
+      border-radius:10px;
       box-shadow:0 2px 5px rgb(0 0 0 / 0.15);
     }
+
     .filter-title{
-      display:flex; align-items:center; justify-content:space-between;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       margin-bottom:15px;
     }
+
     .filter-title h6{
-      font-size:1.1rem; margin:0; font-weight:600;
+      font-size:1.1rem;
+      margin:0;
+      font-weight:600;
     }
+
     .filter-sub{
-      font-size:.85rem; color:#777; margin:0;
+      font-size:.85rem;
+      color:#777;
+      margin:0;
     }
+
     .field-label{
-      font-weight:600; margin-bottom:4px;
+      font-weight:600;
+      margin-bottom:4px;
     }
+
     .divider{
       border-top:1px solid #e1e1e1;
       margin:15px 0;
     }
+
     .help{
-      font-size:.75rem; color:#777; margin-top:3px;
-    }
-    
-    .actions-wrap{
-      display:flex; flex-wrap:wrap; gap:8px;
-      justify-content:flex-end;
+      font-size:.75rem;
+      color:#777;
+      margin-top:3px;
     }
 
-    /* ROLAGEM TABELA */
+    .actions-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      margin:0;
+      white-space:nowrap;
+    }
+
     .table-container{
-      max-height:750px; overflow:auto;
-      border:2px solid #ddd; border-radius:6px;
+      max-height:750px;
+      overflow:auto;
+      border:2px solid #ddd;
+      border-radius:6px;
       background:#fff;
     }
 
     table td, table th{
-      padding:10px; font-size:.90rem; white-space:nowrap;
+      padding:10px;
+      font-size:.90rem;
+      white-space:nowrap;
+      vertical-align:middle;
     }
 
     .pager{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
       padding:10px 0;
+      flex-wrap:wrap;
     }
 
-    .muted{ color:#6c757d; font-size:.9rem; }
+    .pager .left,
+    .pager .right{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .muted{
+      color:#6c757d;
+      font-size:.9rem;
+    }
+
+    .status-msg{
+      min-height:24px;
+    }
+
+    @media (max-width: 768px){
+      .topbar{
+        align-items:flex-start;
+      }
+
+      .actions-wrap{
+        justify-content:flex-start;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <!-- 🔵 BARRA SUPERIOR -->
   <div class="topbar">
     <h4 class="m-0">Painel do Administrador - Energisa</h4>
-    <div class="d-flex align-items-center gap-2">
-      <a href="https://coec-epb.github.io/prestacao_dashboard/"
-         class="btn btn-light fw-bold" style="border-radius:6px;">
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a
+        href="https://coec-epb.github.io/prestacao_dashboard/"
+        class="btn btn-light fw-bold"
+        style="border-radius:6px;"
+      >
         ⬅️ Voltar
       </a>
+
       <span id="userInfo" class="me-3 fw-bold"></span>
       <button class="logout-btn" onclick="logout()">Sair</button>
     </div>
@@ -97,9 +183,7 @@
   <div class="container">
     <p id="status" class="status-msg text-danger"></p>
 
-    <!-- 🔳 CARD DE FILTROS -->
     <div class="filter-card mb-4">
-
       <div class="filter-title">
         <div>
           <h6>🔎 Filtros</h6>
@@ -107,7 +191,6 @@
         </div>
       </div>
 
-      <!-- LINHA 1 -->
       <div class="row g-3">
         <div class="col-lg-3 col-md-6">
           <div class="field-label">Regional</div>
@@ -123,10 +206,18 @@
           <div class="field-label">Polo</div>
           <select id="filtroPolo" class="form-select">
             <option value="">Todos</option>
-            <option>João Pessoa</option><option>Itabaiana</option><option>Mamanguape</option>
-            <option>Borborema</option><option>Campina Grande</option><option>Monteiro</option>
-            <option>Guarabira</option><option>Esperança</option><option>Itaporanga</option>
-            <option>Sousa</option><option>Patos</option><option>Catolé do Rocha</option>
+            <option>João Pessoa</option>
+            <option>Itabaiana</option>
+            <option>Mamanguape</option>
+            <option>Borborema</option>
+            <option>Campina Grande</option>
+            <option>Monteiro</option>
+            <option>Guarabira</option>
+            <option>Esperança</option>
+            <option>Itaporanga</option>
+            <option>Sousa</option>
+            <option>Patos</option>
+            <option>Catolé do Rocha</option>
           </select>
         </div>
 
@@ -143,9 +234,7 @@
 
       <div class="divider"></div>
 
-      <!-- LINHA 2 -->
       <div class="row g-3 align-items-end">
-
         <div class="col-lg-6 col-md-12">
           <div class="field-label">Matrícula</div>
           <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
@@ -164,7 +253,6 @@
 
         <div class="col-lg-4 col-md-12">
           <div class="actions-wrap">
-
             <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
               🔍 Aplicar
             </button>
@@ -198,20 +286,18 @@
             <button class="btn btn-danger" onclick="excluirSelecionados()">
               🗑️ Excluir
             </button>
-
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- PAGINAÇÃO -->
     <div class="pager">
       <div class="left">
         <button id="btnAnterior" class="btn btn-outline-primary" onclick="paginaAnterior()">⬅️ Anterior</button>
         <button id="btnProximo" class="btn btn-outline-primary" onclick="proximaPagina()">Próximo ➡️</button>
         <span class="muted" id="infoPaginacao">Página 1</span>
       </div>
+
       <div class="right">
         <label class="muted m-0">Ir para página:</label>
         <input id="inputIrPagina" type="number" min="1" class="form-control" style="width:110px" />
@@ -219,7 +305,6 @@
       </div>
     </div>
 
-    <!-- TABELA -->
     <div class="table-container">
       <table class="table table-bordered table-striped table-hover mb-0">
         <thead class="table-dark">
@@ -227,10 +312,21 @@
             <th class="text-center">
               <input type="checkbox" id="checkTodos" onclick="marcarTodos(this)" />
             </th>
-            <th>ID</th><th>Nome</th><th>Email</th><th>Regional</th><th>Polo</th>
-            <th>Matrícula</th><th>Data Uso</th><th>Tipo Refeição</th><th>Horário</th>
-            <th>Localidade</th><th>GPS</th><th>Sequência</th><th>OS/RRSS</th>
-            <th>Nº ADD</th><th>Solicitado</th>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Regional</th>
+            <th>Polo</th>
+            <th>Matrícula</th>
+            <th>Data Uso</th>
+            <th>Tipo Refeição</th>
+            <th>Horário</th>
+            <th>Localidade</th>
+            <th>GPS</th>
+            <th>Sequência</th>
+            <th>OS/RRSS</th>
+            <th>Nº ADD</th>
+            <th>Solicitado</th>
           </tr>
         </thead>
         <tbody id="tabela"></tbody>
@@ -239,39 +335,11 @@
   </div>
 
   <script>
-
-    function formatarDataBR(dataISO) {
-  if (!dataISO) return "";
-  const d = new Date(dataISO);
-  if (isNaN(d)) return dataISO; // caso venha algo inesperado
-  return d.toLocaleDateString("pt-BR");
-}
-
-    // Selecionar/desselecionar todos os itens da PÁGINA ATUAL (os que estão filtrados no momento)
-document.getElementById("checkTodosFiltrados").addEventListener("change", (e) => {
-  const checked = e.target.checked;
-  document.querySelectorAll(".check-item").forEach(cb => cb.checked = checked);
-
-  // mantém o checkbox do cabeçalho da tabela sincronizado
-  const checkTodos = document.getElementById("checkTodos");
-  if (checkTodos) checkTodos.checked = checked;
-});
-    const ADMINS = ["3080117", "3056107","3001621", "10267","10436","9170","11338","3075670","9622",
-      "3049298","10267","11148","3049314","9428","3089287","6156","10349","279091","9835","8263","10432","10267",
-      "8981","3049298","3075549","8929","3089245"];
-
-    const matriculaLogin = localStorage.getItem("matricula");
-    if (!matriculaLogin) window.location.href = "https://coec-epb.github.io/login/";
-    if (!ADMINS.includes(matriculaLogin)) {
-      alert("Acesso negado!");
-      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
-    }
-    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
-
-    function logout() {
-      localStorage.removeItem("matricula");
-      window.location.href = "https://coec-epb.github.io/login/";
-    }
+    const ADMINS = [
+      "3080117", "3056107", "3001621", "10267", "10436", "9170", "11338", "3075670", "9622",
+      "3049298", "10267", "11148", "3049314", "9428", "3089287", "6156", "10349", "279091",
+      "9835", "8263", "10432", "10267", "8981", "3049298", "3075549", "8929", "3089245"
+    ];
 
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
@@ -290,7 +358,25 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
       mostrarSolicitados: false
     };
 
-    function setStatus(text, type="primary") {
+    const matriculaLogin = localStorage.getItem("matricula");
+
+    if (!matriculaLogin) {
+      window.location.href = "https://coec-epb.github.io/login/";
+    }
+
+    if (!ADMINS.includes(matriculaLogin)) {
+      alert("Acesso negado!");
+      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
+    }
+
+    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
+
+    function logout() {
+      localStorage.removeItem("matricula");
+      window.location.href = "https://coec-epb.github.io/login/";
+    }
+
+    function setStatus(text, type = "primary") {
       const status = document.getElementById("status");
       status.className = "status-msg fw-bold text-" + type;
       status.innerText = text;
@@ -302,30 +388,33 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
     }
 
     function lerFiltrosDaTela() {
-      filtros.regional   = document.getElementById("filtroRegional").value.trim();
-      filtros.polo       = document.getElementById("filtroPolo").value.trim();
+      filtros.regional = document.getElementById("filtroRegional").value.trim();
+      filtros.polo = document.getElementById("filtroPolo").value.trim();
       filtros.dataInicio = document.getElementById("dataInicio").value;
-      filtros.dataFim    = document.getElementById("dataFim").value;
-      filtros.matricula  = document.getElementById("filtroMatricula").value.trim();
-      filtros.limit      = getLimit();
+      filtros.dataFim = document.getElementById("dataFim").value;
+      filtros.matricula = document.getElementById("filtroMatricula").value.trim();
+      filtros.limit = getLimit();
       filtros.mostrarSolicitados = document.getElementById("mostrarSolicitados").checked;
     }
 
-    function montarQS(page, semPaginacao=false) {
+    function montarQS(page, semPaginacao = false) {
       const p = new URLSearchParams();
-      if (filtros.regional)   p.set("regional", filtros.regional);
-      if (filtros.polo)       p.set("polo", filtros.polo);
-      if (filtros.matricula)  p.set("matricula", filtros.matricula);
-      if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
-      if (filtros.dataFim)    p.set("dataFim", filtros.dataFim);
 
-      // ✅ solicitado
-      if (filtros.mostrarSolicitados) p.set("mostrarSolicitados", "1");
+      if (filtros.regional) p.set("regional", filtros.regional);
+      if (filtros.polo) p.set("polo", filtros.polo);
+      if (filtros.matricula) p.set("matricula", filtros.matricula);
+      if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
+      if (filtros.dataFim) p.set("dataFim", filtros.dataFim);
+
+      if (filtros.mostrarSolicitados) {
+        p.set("mostrarSolicitados", "1");
+      }
 
       if (!semPaginacao) {
         p.set("page", String(page));
         p.set("limit", String(filtros.limit));
       }
+
       return p.toString();
     }
 
@@ -338,39 +427,95 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
       document.getElementById("checkTodos").checked = false;
     }
 
+    function escaparHTML(valor) {
+      return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatarDataBR(dataISO) {
+      if (!dataISO) return "";
+
+      const valor = String(dataISO).trim();
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+        const [ano, mes, dia] = valor.split("-");
+        return `${dia}/${mes}/${ano}`;
+      }
+
+      if (/^\d{4}-\d{2}-\d{2}T/.test(valor)) {
+        const parteData = valor.slice(0, 10);
+        const [ano, mes, dia] = parteData.split("-");
+        return `${dia}/${mes}/${ano}`;
+      }
+
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
+        return valor;
+      }
+
+      return valor;
+    }
+
     function preencherTabela(lista) {
       const tabela = document.getElementById("tabela");
       tabela.innerHTML = "";
 
-      lista.forEach(item => {
-        tabela.innerHTML += `
+      if (!lista || lista.length === 0) {
+        tabela.innerHTML = `
           <tr>
-            <td class="text-center">
-              <input type="checkbox" class="check-item" value="${item.id}">
+            <td colspan="16" class="text-center text-muted py-4">
+              Nenhum registro encontrado.
             </td>
-            <td>${item.id ?? ""}</td>
-            <td>${item.nome ?? ""}</td>
-            <td>${item.email ?? ""}</td>
-            <td>${item.regional ?? ""}</td>
-            <td>${item.polo ?? ""}</td>
-            <td>${item.matricula ?? ""}</td>
-            <td>${formatarDataBR(item.datauso)}</td>
-            <td>${item.tiporefeicao ?? ""}</td>
-            <td>${item.horario ?? ""}</td>
-            <td>${item.localidade ?? ""}</td>
-            <td>${item.gps ?? ""}</td>
-            <td>${item.sequencia ?? ""}</td>
-            <td>${item.osrrss ?? ""}</td>
-            <td>${item.numeroadd ?? ""}</td>
-            <td>${item.solicitado ?? ""}</td>
           </tr>
         `;
-      });
+        return;
+      }
+
+      const linhas = lista.map(item => `
+        <tr>
+          <td class="text-center">
+            <input type="checkbox" class="check-item" value="${escaparHTML(item.id)}">
+          </td>
+          <td>${escaparHTML(item.id)}</td>
+          <td>${escaparHTML(item.nome)}</td>
+          <td>${escaparHTML(item.email)}</td>
+          <td>${escaparHTML(item.regional)}</td>
+          <td>${escaparHTML(item.polo)}</td>
+          <td>${escaparHTML(item.matricula)}</td>
+          <td>${escaparHTML(formatarDataBR(item.datauso))}</td>
+          <td>${escaparHTML(item.tiporefeicao)}</td>
+          <td>${escaparHTML(item.horario)}</td>
+          <td>${escaparHTML(item.localidade)}</td>
+          <td>${escaparHTML(item.gps)}</td>
+          <td>${escaparHTML(item.sequencia)}</td>
+          <td>${escaparHTML(item.osrrss)}</td>
+          <td>${escaparHTML(item.numeroadd)}</td>
+          <td>${escaparHTML(item.solicitado)}</td>
+        </tr>
+      `).join("");
+
+      tabela.innerHTML = linhas;
     }
 
     function marcarTodos(checkbox) {
-      document.querySelectorAll(".check-item").forEach(cb => cb.checked = checkbox.checked);
+      document.querySelectorAll(".check-item").forEach(cb => {
+        cb.checked = checkbox.checked;
+      });
     }
+
+    document.getElementById("checkTodosFiltrados").addEventListener("change", (e) => {
+      const checked = e.target.checked;
+
+      document.querySelectorAll(".check-item").forEach(cb => {
+        cb.checked = checked;
+      });
+
+      const checkTodos = document.getElementById("checkTodos");
+      if (checkTodos) checkTodos.checked = checked;
+    });
 
     async function carregarPagina(page) {
       const btnFiltrar = document.getElementById("btnFiltrar");
@@ -381,7 +526,11 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
 
         const resp = await fetch(
           `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-          { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
+          }
         );
 
         if (!resp.ok) {
@@ -401,6 +550,7 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
 
         setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
       } catch (err) {
+        console.error(err);
         setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
       } finally {
         btnFiltrar.disabled = false;
@@ -431,6 +581,8 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
       document.getElementById("selectPorPagina").value = "50";
       document.getElementById("mostrarSolicitados").checked = false;
       document.getElementById("checkTodosFiltrados").checked = false;
+      document.getElementById("checkTodos").checked = false;
+      document.getElementById("inputIrPagina").value = "";
 
       lerFiltrosDaTela();
       paginaAtual = 1;
@@ -438,103 +590,126 @@ document.getElementById("checkTodosFiltrados").addEventListener("change", (e) =>
     }
 
     async function proximaPagina() {
-      if (paginaAtual < totalPages) await carregarPagina(paginaAtual + 1);
+      if (paginaAtual < totalPages) {
+        await carregarPagina(paginaAtual + 1);
+      }
     }
 
     async function paginaAnterior() {
-      if (paginaAtual > 1) await carregarPagina(paginaAtual - 1);
+      if (paginaAtual > 1) {
+        await carregarPagina(paginaAtual - 1);
+      }
     }
 
     async function irParaPagina() {
       const v = Number(document.getElementById("inputIrPagina").value);
+
       if (!Number.isFinite(v) || v < 1) return;
 
       const destino = Math.max(1, Math.min(totalPages, v));
       await carregarPagina(destino);
     }
 
+    function prepararDadosParaExportacao(lista) {
+      return (lista || []).map(item => ({
+        ID: item.id ?? "",
+        Nome: item.nome ?? "",
+        Email: item.email ?? "",
+        Regional: item.regional ?? "",
+        Polo: item.polo ?? "",
+        Matrícula: item.matricula ?? "",
+        "Data Uso": formatarDataBR(item.datauso),
+        "Tipo Refeição": item.tiporefeicao ?? "",
+        Horário: item.horario ?? "",
+        Localidade: item.localidade ?? "",
+        GPS: item.gps ?? "",
+        Sequência: item.sequencia ?? "",
+        "OS/RRSS": item.osrrss ?? "",
+        "Nº ADD": item.numeroadd ?? "",
+        Solicitado: item.solicitado ?? ""
+      }));
+    }
+
     function baixarXLSXPaginaAtual() {
-  if (!dadosFiltrados || dadosFiltrados.length === 0) {
-    alert("Nenhum dado na página para exportar.");
-    return;
-  }
+      if (!dadosFiltrados || dadosFiltrados.length === 0) {
+        alert("Nenhum dado na página para exportar.");
+        return;
+      }
 
-  const dadosExport = dadosFiltrados.map(item => ({
-    ...item,
-    datauso: formatarDataBR(item.datauso)
-  }));
+      const dadosExport = prepararDadosParaExportacao(dadosFiltrados);
+      const ws = XLSX.utils.json_to_sheet(dadosExport);
+      const wb = XLSX.utils.book_new();
 
-  const ws = XLSX.utils.json_to_sheet(dadosExport);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Pagina");
-
-  XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
-}
-
-    function formatarDataBR(dataISO) {
-  if (!dataISO) return "";
-  const d = new Date(dataISO);
-  if (isNaN(d)) return dataISO;
-  return d.toLocaleDateString("pt-BR");
-}
-
-async function baixarXLSXTudoFiltrado() {
-  lerFiltrosDaTela();
-
-  try {
-    setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
-
-    const resp1 = await fetch(
-      `${BASE_URL}/buscar-todos?${montarQS(1)}`,
-      { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
-    );
-    if (!resp1.ok) throw new Error("Falha ao iniciar exportação");
-
-    const payload1 = await resp1.json();
-    const tp = Number(payload1.totalPages || 1);
-    const tudo = [...(payload1.items || [])];
-
-    setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
-
-    for (let page = 2; page <= tp; page++) {
-      const resp = await fetch(
-        `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-        { headers: { "X-MATRICULA": localStorage.getItem("matricula") } }
-      );
-      if (!resp.ok) throw new Error(`Falha ao buscar página ${page}`);
-
-      const payload = await resp.json();
-      tudo.push(...(payload.items || []));
-      setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
+      XLSX.utils.book_append_sheet(wb, ws, "Pagina");
+      XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
     }
 
-    if (tudo.length === 0) {
-      alert("Nenhum dado para exportar.");
-      setStatus("Nenhum registro encontrado para exportação.", "danger");
-      return;
+    async function baixarXLSXTudoFiltrado() {
+      lerFiltrosDaTela();
+
+      try {
+        setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
+
+        const resp1 = await fetch(
+          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
+          }
+        );
+
+        if (!resp1.ok) {
+          throw new Error("Falha ao iniciar exportação");
+        }
+
+        const payload1 = await resp1.json();
+        const tp = Number(payload1.totalPages || 1);
+        const tudo = [...(payload1.items || [])];
+
+        setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
+
+        for (let page = 2; page <= tp; page++) {
+          const resp = await fetch(
+            `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+            {
+              headers: {
+                "X-MATRICULA": localStorage.getItem("matricula")
+              }
+            }
+          );
+
+          if (!resp.ok) {
+            throw new Error(`Falha ao buscar página ${page}`);
+          }
+
+          const payload = await resp.json();
+          tudo.push(...(payload.items || []));
+          setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
+        }
+
+        if (tudo.length === 0) {
+          alert("Nenhum dado para exportar.");
+          setStatus("Nenhum registro encontrado para exportação.", "danger");
+          return;
+        }
+
+        const tudoFormatado = prepararDadosParaExportacao(tudo);
+        const ws = XLSX.utils.json_to_sheet(tudoFormatado);
+        const wb = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(wb, ws, "Tudo");
+        XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
+
+        setStatus(`✅ Exportado com sucesso (${tudoFormatado.length} registros)`, "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("❌ Erro ao exportar: " + err.message, "danger");
+      }
     }
-
-    // ✅ Formata a datauso para dd/mm/aaaa antes de gerar o XLSX
-    const tudoFormatado = tudo.map(item => ({
-      ...item,
-      datauso: formatarDataBR(item.datauso)
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(tudoFormatado);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Tudo");
-    XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
-
-    setStatus(`✅ Exportado com sucesso (${tudoFormatado.length} registros)`, "success");
-  } catch (err) {
-    setStatus("❌ Erro ao exportar: " + err.message, "danger");
-  }
-}
-
 
     async function excluirSelecionados() {
-      const selecionados = [...document.querySelectorAll(".check-item:checked")]
-        .map(cb => cb.value);
+      const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
 
       if (selecionados.length === 0) {
         alert("Selecione ao menos um registro.");
@@ -544,6 +719,7 @@ async function baixarXLSXTudoFiltrado() {
       const confirmar = confirm(
         `⚠️ Tem certeza que deseja excluir ${selecionados.length} registro(s)?\n\nEssa ação NÃO pode ser desfeita.`
       );
+
       if (!confirmar) return;
 
       try {
@@ -556,22 +732,24 @@ async function baixarXLSXTudoFiltrado() {
           body: JSON.stringify({ ids: selecionados })
         });
 
-        if (!resp.ok) throw new Error("Erro ao excluir");
+        if (!resp.ok) {
+          throw new Error("Erro ao excluir");
+        }
 
         const resultado = await resp.json();
         alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
 
         await carregarPagina(paginaAtual);
+
         if (dadosFiltrados.length === 0 && paginaAtual > 1) {
           await carregarPagina(paginaAtual - 1);
         }
       } catch (err) {
-        alert("❌ Erro ao excluir registros");
         console.error(err);
+        alert("❌ Erro ao excluir registros");
       }
     }
 
-    // ✅ NOVO: marcar como solicitado (por IDs ou por filtro)
     async function marcarFiltradosComoSolicitado() {
       lerFiltrosDaTela();
 
@@ -586,24 +764,29 @@ async function baixarXLSXTudoFiltrado() {
 
           const resp = await fetch(`${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
             method: "POST",
-            headers: { "X-MATRICULA": localStorage.getItem("matricula") }
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
           });
 
           const data = await resp.json().catch(() => ({}));
-          if (!resp.ok) throw new Error(data?.erro || "Falha ao marcar filtrados");
+
+          if (!resp.ok) {
+            throw new Error(data?.erro || "Falha ao marcar filtrados");
+          }
 
           alert(`✅ Atualizados: ${data.atualizados ?? 0}`);
           await carregarPagina(1);
         } catch (err) {
+          console.error(err);
           alert("❌ Erro: " + err.message);
           setStatus("❌ Erro ao marcar filtrados: " + err.message, "danger");
         }
+
         return;
       }
 
-      // senão: marca só os selecionados da tabela
-      const selecionados = [...document.querySelectorAll(".check-item:checked")]
-        .map(cb => cb.value);
+      const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
 
       if (selecionados.length === 0) {
         alert("Selecione registros na tabela OU marque 'Selecionar TODOS filtrados'.");
@@ -626,11 +809,15 @@ async function baixarXLSXTudoFiltrado() {
         });
 
         const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data?.erro || "Falha ao marcar selecionados");
+
+        if (!resp.ok) {
+          throw new Error(data?.erro || "Falha ao marcar selecionados");
+        }
 
         alert(`✅ Atualizados: ${data.atualizados ?? 0}`);
         await carregarPagina(paginaAtual);
       } catch (err) {
+        console.error(err);
         alert("❌ Erro: " + err.message);
         setStatus("❌ Erro ao marcar selecionados: " + err.message, "danger");
       }
@@ -647,7 +834,6 @@ async function baixarXLSXTudoFiltrado() {
       await carregarPagina(1);
     });
 
-    // ✅ quando marcar/desmarcar "mostrar solicitados", recarrega
     document.getElementById("mostrarSolicitados").addEventListener("change", async () => {
       lerFiltrosDaTela();
       paginaAtual = 1;
