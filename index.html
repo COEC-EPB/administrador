@@ -17,6 +17,10 @@
       --soft-red-border:#f3c6c6;
       --soft-blue:#f3fafe;
       --soft-blue-border:#cfe8f3;
+      --soft-green:#f3fff5;
+      --soft-green-border:#b7e4c7;
+      --soft-yellow:#fff8e6;
+      --soft-yellow-border:#f2d48a;
     }
 
     body{
@@ -166,6 +170,11 @@
       border:1px solid var(--soft-blue-border);
     }
 
+    .calendario-card{
+      background:var(--soft-green);
+      border:1px solid var(--soft-green-border);
+    }
+
     .matricula-link{
       color:var(--energisa-blue-dark);
       font-weight:700;
@@ -212,6 +221,152 @@
       background:#b84d14;
     }
 
+    .calendario-wrap{
+      margin-top:18px;
+      background:#fff;
+      border:1px solid #dbe7ee;
+      border-radius:12px;
+      padding:14px;
+    }
+
+    .cal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .cal-head strong{
+      text-transform:capitalize;
+      font-size:1rem;
+      color:#1f2d3d;
+    }
+
+    .cal-nav-btn{
+      border:1px solid #ced4da;
+      background:#fff;
+      border-radius:8px;
+      padding:6px 10px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .cal-nav-btn:hover{
+      background:#f1f3f5;
+    }
+
+    .cal-grid{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      gap:6px;
+    }
+
+    .cal-weekday{
+      text-align:center;
+      font-size:.78rem;
+      font-weight:700;
+      color:#6c757d;
+      padding:4px 0;
+    }
+
+    .cal-dia-vazio{
+      height:38px;
+    }
+
+    .cal-dia{
+      height:38px;
+      border:none;
+      border-radius:10px;
+      font-size:.85rem;
+      font-weight:600;
+      cursor:pointer;
+      background:#f1f3f5;
+      color:#343a40;
+      transition:.2s;
+    }
+
+    .cal-dia:hover{
+      transform:translateY(-1px);
+      box-shadow:0 2px 6px rgba(0,0,0,.12);
+    }
+
+    .cal-dia.normal{
+      background:#f1f3f5;
+      color:#343a40;
+    }
+
+    .cal-dia.add{
+      background:#d1e7dd;
+      color:#0f5132;
+    }
+
+    .cal-dia.bloqueado{
+      background:#f8d7da;
+      color:#842029;
+    }
+
+    .cal-dia.add-bloqueado{
+      background:#fff3cd;
+      color:#7c5c00;
+    }
+
+    .cal-dia.selecionado{
+      outline:3px solid var(--energisa-blue);
+    }
+
+    .legenda-cal{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:12px;
+      font-size:.82rem;
+      color:#495057;
+    }
+
+    .legenda-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .legenda-cor{
+      width:14px;
+      height:14px;
+      border-radius:4px;
+      display:inline-block;
+      border:1px solid rgba(0,0,0,.08);
+    }
+
+    .acao-dia-box{
+      display:none;
+      margin-top:14px;
+      background:#f8f9fa;
+      border:1px solid #dee2e6;
+      border-radius:10px;
+      padding:12px;
+    }
+
+    .acao-dia-box.show{
+      display:block;
+    }
+
+    .acao-dia-title{
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .resumo-dia{
+      font-size:.9rem;
+      color:#495057;
+      margin-bottom:10px;
+      line-height:1.5;
+    }
+
+    .resumo-dia ul{
+      margin:8px 0 0 18px;
+    }
+
     @media (max-width: 768px){
       .topbar{
         align-items:flex-start;
@@ -219,6 +374,11 @@
 
       .actions-wrap{
         justify-content:flex-start;
+      }
+
+      .cal-dia{
+        height:34px;
+        font-size:.8rem;
       }
     }
   </style>
@@ -262,7 +422,7 @@
       <div class="filter-title">
         <div>
           <h6>🔒 Bloqueio de dia por colaborador</h6>
-          <p class="filter-sub">Impede que uma matrícula lance uma data específica. Informe uma justificativa.</p>
+          <p class="filter-sub">Selecione uma matrícula e use o mini calendário para bloquear, desbloquear ou excluir lançamentos do dia.</p>
         </div>
         <button class="btn btn-outline-dark btn-sm" onclick="carregarBloqueiosAtivos()">Atualizar bloqueios</button>
       </div>
@@ -291,6 +451,36 @@
         <button class="btn btn-danger" onclick="bloquearDia()">🔒 Bloquear dia</button>
         <button class="btn btn-outline-danger" onclick="desbloquearDia()">🔓 Desbloquear dia</button>
         <button class="btn btn-outline-secondary" onclick="limparCamposBloqueio()">♻️ Limpar campos</button>
+        <button class="btn btn-outline-primary" onclick="carregarCalendarioColaborador()">📅 Atualizar calendário</button>
+      </div>
+
+      <div id="calendarioColaboradorBox" class="calendario-wrap mt-3" style="display:none;">
+        <div class="cal-head">
+          <button class="cal-nav-btn" onclick="mesAnterior()">◀</button>
+          <strong id="calMesAno">Mês</strong>
+          <button class="cal-nav-btn" onclick="proximoMes()">▶</button>
+        </div>
+
+        <div class="cal-grid" id="calWeekdays"></div>
+        <div class="cal-grid" id="calendarioGrid"></div>
+
+        <div class="legenda-cal">
+          <div class="legenda-item"><span class="legenda-cor" style="background:#f1f3f5;"></span> Normal</div>
+          <div class="legenda-item"><span class="legenda-cor" style="background:#d1e7dd;"></span> Lançado</div>
+          <div class="legenda-item"><span class="legenda-cor" style="background:#f8d7da;"></span> Bloqueado</div>
+          <div class="legenda-item"><span class="legenda-cor" style="background:#fff3cd;"></span> Lançado + bloqueado</div>
+        </div>
+
+        <div id="acaoDiaBox" class="acao-dia-box">
+          <div class="acao-dia-title" id="acaoDiaTitulo">Dia selecionado</div>
+          <div class="resumo-dia" id="acaoDiaResumo"></div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-danger btn-sm" onclick="bloquearDia()">🔒 Bloquear dia</button>
+            <button class="btn btn-outline-danger btn-sm" onclick="desbloquearDia()">🔓 Desbloquear dia</button>
+            <button class="btn btn-outline-dark btn-sm" onclick="excluirLancamentosDoDia()">🗑️ Excluir lançamento(s)</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -488,6 +678,12 @@
     let totalItems = 0;
     let dadosFiltrados = [];
 
+    let calendarioDataAtual = new Date();
+    let calendarioLancamentos = [];
+    let calendarioBloqueios = [];
+    let calendarioMatriculaAtual = "";
+    let diaSelecionado = "";
+
     const filtros = {
       regional: "",
       polo: "",
@@ -599,13 +795,165 @@
       return valor;
     }
 
+    function formatarMesAno(data) {
+      return data.toLocaleDateString("pt-BR", {
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function setWeekdays() {
+      const el = document.getElementById("calWeekdays");
+      el.innerHTML = ["D","S","T","Q","Q","S","S"]
+        .map(d => `<div class="cal-weekday">${d}</div>`)
+        .join("");
+    }
+
+    function getLancamentosDoDia(dataISO) {
+      return calendarioLancamentos.filter(item => String(item.datauso || "") === dataISO);
+    }
+
+    function getBloqueioDoDia(dataISO) {
+      return calendarioBloqueios.find(item => String(item.datauso || "") === dataISO) || null;
+    }
+
+    function atualizarResumoDiaSelecionado() {
+      const box = document.getElementById("acaoDiaBox");
+      const titulo = document.getElementById("acaoDiaTitulo");
+      const resumo = document.getElementById("acaoDiaResumo");
+
+      if (!diaSelecionado) {
+        box.classList.remove("show");
+        titulo.innerText = "";
+        resumo.innerHTML = "";
+        return;
+      }
+
+      const lancamentos = getLancamentosDoDia(diaSelecionado);
+      const bloqueio = getBloqueioDoDia(diaSelecionado);
+
+      titulo.innerText = `Dia selecionado: ${formatarDataBR(diaSelecionado)}`;
+
+      let html = "";
+      html += `<div><strong>Matrícula:</strong> ${escaparHTML(calendarioMatriculaAtual || "-")}</div>`;
+
+      if (lancamentos.length > 0) {
+        html += `<div class="mt-2"><strong>Lançamentos do dia:</strong></div><ul>`;
+        html += lancamentos.map(item => `
+          <li>
+            ${escaparHTML(item.tiporefeicao || "—")}
+            ${item.horario ? ` • ${escaparHTML(item.horario)}` : ""}
+            ${item.localidade ? ` • ${escaparHTML(item.localidade)}` : ""}
+          </li>
+        `).join("");
+        html += `</ul>`;
+      } else {
+        html += `<div class="mt-2"><strong>Lançamentos do dia:</strong> nenhum</div>`;
+      }
+
+      if (bloqueio) {
+        html += `
+          <div class="mt-2">
+            <strong>Bloqueio ativo:</strong> sim<br>
+            <strong>Justificativa:</strong> ${escaparHTML(bloqueio.justificativa || "")}
+          </div>
+        `;
+      } else {
+        html += `<div class="mt-2"><strong>Bloqueio ativo:</strong> não</div>`;
+      }
+
+      resumo.innerHTML = html;
+      box.classList.add("show");
+    }
+
+    function renderCalendarioColaborador() {
+      const box = document.getElementById("calendarioColaboradorBox");
+      const grid = document.getElementById("calendarioGrid");
+      const mesAno = document.getElementById("calMesAno");
+
+      if (!calendarioMatriculaAtual) {
+        box.style.display = "none";
+        return;
+      }
+
+      box.style.display = "block";
+      setWeekdays();
+
+      const ano = calendarioDataAtual.getFullYear();
+      const mes = calendarioDataAtual.getMonth();
+
+      mesAno.innerText = formatarMesAno(calendarioDataAtual);
+      grid.innerHTML = "";
+
+      const primeiroDia = new Date(ano, mes, 1).getDay();
+      const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+      for (let i = 0; i < primeiroDia; i++) {
+        const vazio = document.createElement("div");
+        vazio.className = "cal-dia-vazio";
+        grid.appendChild(vazio);
+      }
+
+      for (let dia = 1; dia <= totalDias; dia++) {
+        const dataISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+        const lancamentos = getLancamentosDoDia(dataISO);
+        const bloqueio = getBloqueioDoDia(dataISO);
+
+        let classe = "cal-dia normal";
+        if (lancamentos.length > 0 && bloqueio) {
+          classe = "cal-dia add-bloqueado";
+        } else if (bloqueio) {
+          classe = "cal-dia bloqueado";
+        } else if (lancamentos.length > 0) {
+          classe = "cal-dia add";
+        }
+
+        if (diaSelecionado === dataISO) {
+          classe += " selecionado";
+        }
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = classe;
+        btn.textContent = dia;
+        btn.onclick = () => selecionarDiaCalendario(dataISO);
+
+        grid.appendChild(btn);
+      }
+
+      atualizarResumoDiaSelecionado();
+    }
+
+    window.selecionarDiaCalendario = function (dataISO) {
+      diaSelecionado = dataISO;
+      document.getElementById("bloqData").value = dataISO;
+      renderCalendarioColaborador();
+    };
+
+    window.mesAnterior = function () {
+      calendarioDataAtual = new Date(calendarioDataAtual.getFullYear(), calendarioDataAtual.getMonth() - 1, 1);
+      renderCalendarioColaborador();
+    };
+
+    window.proximoMes = function () {
+      calendarioDataAtual = new Date(calendarioDataAtual.getFullYear(), calendarioDataAtual.getMonth() + 1, 1);
+      renderCalendarioColaborador();
+    };
+
     window.limparCamposBloqueio = function () {
       document.getElementById("bloqMatricula").value = "";
       document.getElementById("bloqData").value = "";
       document.getElementById("bloqJustificativa").value = "";
+
+      calendarioMatriculaAtual = "";
+      calendarioLancamentos = [];
+      calendarioBloqueios = [];
+      diaSelecionado = "";
+      document.getElementById("calendarioColaboradorBox").style.display = "none";
+      document.getElementById("acaoDiaBox").classList.remove("show");
     };
 
-    window.preencherCamposBloqueio = function (matricula, datauso = "") {
+    window.preencherCamposBloqueio = async function (matricula, datauso = "") {
       document.getElementById("bloqMatricula").value = matricula || "";
       document.getElementById("bloqData").value = datauso || "";
 
@@ -620,6 +968,16 @@
 
       document.getElementById("bloqMatricula").focus();
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      await carregarCalendarioColaborador();
+
+      if (datauso) {
+        diaSelecionado = datauso;
+        document.getElementById("bloqData").value = datauso;
+        const partes = datauso.split("-");
+        calendarioDataAtual = new Date(Number(partes[0]), Number(partes[1]) - 1, 1);
+        renderCalendarioColaborador();
+      }
     };
 
     window.togglePainelBloqueio = function () {
@@ -640,6 +998,67 @@
         botao.classList.add("ativo");
         botao.innerText = "🔓 Ocultar bloqueio de colaborador";
         carregarBloqueiosAtivos();
+      }
+    };
+
+    window.carregarCalendarioColaborador = async function () {
+      const matricula = document.getElementById("bloqMatricula").value.trim();
+
+      if (!matricula) {
+        alert("Informe a matrícula do colaborador.");
+        return;
+      }
+
+      try {
+        setStatus("🔄 Carregando calendário do colaborador...", "primary");
+
+        calendarioMatriculaAtual = matricula;
+
+        const [respLanc, respBloq] = await Promise.all([
+          fetch(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`, {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
+          }),
+          fetch(`${BASE_URL}/listar-bloqueios`, {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
+          })
+        ]);
+
+        const lancJson = await respLanc.json().catch(() => []);
+        const bloqJson = await respBloq.json().catch(() => ({}));
+
+        calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
+        calendarioBloqueios = (bloqJson.items || []).filter(item => String(item.matricula || "") === matricula);
+
+        const dataCampo = document.getElementById("bloqData").value.trim();
+        if (dataCampo) {
+          diaSelecionado = dataCampo;
+          const partes = dataCampo.split("-");
+          if (partes.length === 3) {
+            calendarioDataAtual = new Date(Number(partes[0]), Number(partes[1]) - 1, 1);
+          }
+        } else if (calendarioLancamentos.length > 0) {
+          const ref = String(calendarioLancamentos[0].datauso || "");
+          if (/^\d{4}-\d{2}-\d{2}$/.test(ref)) {
+            const [a, m] = ref.split("-");
+            calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
+          }
+        } else if (calendarioBloqueios.length > 0) {
+          const ref = String(calendarioBloqueios[0].datauso || "");
+          if (/^\d{4}-\d{2}-\d{2}$/.test(ref)) {
+            const [a, m] = ref.split("-");
+            calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
+          }
+        }
+
+        renderCalendarioColaborador();
+        setStatus("✅ Calendário carregado.", "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("❌ Erro ao carregar calendário: " + err.message, "danger");
       }
     };
 
@@ -673,8 +1092,8 @@
 
         alert("✅ Dia bloqueado com sucesso.");
         setStatus("✅ Bloqueio realizado com sucesso.", "success");
-        document.getElementById("bloqJustificativa").value = "";
         await carregarBloqueiosAtivos();
+        await carregarCalendarioColaborador();
       } catch (err) {
         console.error(err);
         alert("❌ " + err.message);
@@ -715,10 +1134,63 @@
         alert("✅ Dia desbloqueado com sucesso.");
         setStatus("✅ Desbloqueio realizado com sucesso.", "success");
         await carregarBloqueiosAtivos();
+        await carregarCalendarioColaborador();
       } catch (err) {
         console.error(err);
         alert("❌ " + err.message);
         setStatus("❌ Erro ao desbloquear: " + err.message, "danger");
+      }
+    };
+
+    window.excluirLancamentosDoDia = async function () {
+      const matricula = document.getElementById("bloqMatricula").value.trim();
+      const datauso = document.getElementById("bloqData").value.trim();
+
+      if (!matricula || !datauso) {
+        alert("Selecione uma matrícula e um dia no calendário.");
+        return;
+      }
+
+      const lancamentos = getLancamentosDoDia(datauso);
+      if (!lancamentos.length) {
+        alert("Não há lançamentos nesse dia para excluir.");
+        return;
+      }
+
+      const tipos = lancamentos.map(x => x.tiporefeicao || "—").join(", ");
+      const confirmar = confirm(
+        `Excluir ${lancamentos.length} lançamento(s) do dia ${formatarDataBR(datauso)}?\n\nTipos: ${tipos}`
+      );
+      if (!confirmar) return;
+
+      try {
+        setStatus("🔄 Excluindo lançamento(s) do dia...", "primary");
+
+        const ids = lancamentos.map(x => x.id).filter(Boolean);
+
+        const resp = await fetch(`${BASE_URL}/excluir`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula") || ""
+          },
+          body: JSON.stringify({ ids })
+        });
+
+        const json = await resp.json().catch(() => ({}));
+
+        if (!resp.ok || json.ok === false) {
+          throw new Error(json.error || "Erro ao excluir lançamento(s).");
+        }
+
+        alert("✅ Lançamento(s) excluído(s) com sucesso.");
+        setStatus("✅ Lançamento(s) excluído(s) com sucesso.", "success");
+        await carregarPagina(paginaAtual);
+        await carregarCalendarioColaborador();
+      } catch (err) {
+        console.error(err);
+        alert("❌ " + err.message);
+        setStatus("❌ Erro ao excluir lançamento(s): " + err.message, "danger");
       }
     };
 
@@ -1149,6 +1621,23 @@
         setStatus("❌ Erro ao marcar selecionados: " + err.message, "danger");
       }
     };
+
+    document.getElementById("bloqMatricula").addEventListener("blur", async () => {
+      const valor = document.getElementById("bloqMatricula").value.trim();
+      if (valor) {
+        await carregarCalendarioColaborador();
+      }
+    });
+
+    document.getElementById("bloqData").addEventListener("change", () => {
+      const valor = document.getElementById("bloqData").value.trim();
+      if (valor) {
+        diaSelecionado = valor;
+        const [a, m] = valor.split("-");
+        calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
+        renderCalendarioColaborador();
+      }
+    });
 
     document.addEventListener("DOMContentLoaded", async () => {
       lerFiltrosDaTela();
