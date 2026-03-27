@@ -13,6 +13,10 @@
       --energisa-blue:#0097CE;
       --energisa-blue-dark:#0079a6;
       --energisa-orange:#F36F21;
+      --soft-red:#fff5f5;
+      --soft-red-border:#f3c6c6;
+      --soft-blue:#f3fafe;
+      --soft-blue-border:#cfe8f3;
     }
 
     body{
@@ -63,6 +67,8 @@
       align-items:center;
       justify-content:space-between;
       margin-bottom:15px;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
     .filter-title h6{
@@ -150,6 +156,40 @@
       min-height:24px;
     }
 
+    .bloqueio-card{
+      background:var(--soft-red);
+      border:1px solid var(--soft-red-border);
+    }
+
+    .bloqueio-lista-card{
+      background:var(--soft-blue);
+      border:1px solid var(--soft-blue-border);
+    }
+
+    .badge-click{
+      cursor:pointer;
+    }
+
+    .matricula-link{
+      color:var(--energisa-blue-dark);
+      font-weight:700;
+      cursor:pointer;
+      text-decoration:underline;
+    }
+
+    .mini-table-wrap{
+      max-height:320px;
+      overflow:auto;
+      background:#fff;
+      border-radius:8px;
+      border:1px solid #dee2e6;
+    }
+
+    .just-wrap{
+      max-width:320px;
+      white-space:normal !important;
+    }
+
     @media (max-width: 768px){
       .topbar{
         align-items:flex-start;
@@ -182,6 +222,71 @@
 
   <div class="container">
     <p id="status" class="status-msg text-danger"></p>
+
+    <div class="filter-card bloqueio-card mb-4">
+      <div class="filter-title">
+        <div>
+          <h6>🔒 Bloqueio de dia por colaborador</h6>
+          <p class="filter-sub">Impede que uma matrícula lance uma data específica. Informe uma justificativa.</p>
+        </div>
+        <button class="btn btn-outline-dark btn-sm" onclick="carregarBloqueiosAtivos()">Atualizar bloqueios</button>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-3 col-md-6">
+          <div class="field-label">Matrícula</div>
+          <input type="text" id="bloqMatricula" class="form-control" placeholder="Digite a matrícula">
+          <div class="help">Dica: clique na matrícula na tabela para preencher automaticamente.</div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="field-label">Data a bloquear</div>
+          <input type="date" id="bloqData" class="form-control">
+        </div>
+
+        <div class="col-lg-6 col-md-12">
+          <div class="field-label">Justificativa</div>
+          <textarea id="bloqJustificativa" class="form-control" rows="2" placeholder="Ex.: data lançada indevidamente, ajuste solicitado, duplicidade, etc."></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-danger" onclick="bloquearDia()">🔒 Bloquear dia</button>
+        <button class="btn btn-outline-danger" onclick="desbloquearDia()">🔓 Desbloquear dia</button>
+        <button class="btn btn-outline-secondary" onclick="limparCamposBloqueio()">♻️ Limpar campos</button>
+      </div>
+    </div>
+
+    <div class="filter-card bloqueio-lista-card mb-4">
+      <div class="filter-title">
+        <div>
+          <h6>📋 Bloqueios ativos</h6>
+          <p class="filter-sub">Veja os bloqueios cadastrados e use a ação rápida para desbloquear.</p>
+        </div>
+      </div>
+
+      <div class="mini-table-wrap">
+        <table class="table table-sm table-bordered table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Matrícula</th>
+              <th>Data</th>
+              <th>Justificativa</th>
+              <th>Criado por</th>
+              <th>Criado em</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaBloqueios">
+            <tr>
+              <td colspan="6" class="text-center text-muted py-3">Carregando bloqueios...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <div class="filter-card mb-4">
       <div class="filter-title">
@@ -459,6 +564,158 @@
       return valor;
     }
 
+    function limparCamposBloqueio() {
+      document.getElementById("bloqMatricula").value = "";
+      document.getElementById("bloqData").value = "";
+      document.getElementById("bloqJustificativa").value = "";
+    }
+
+    function preencherCamposBloqueio(matricula, datauso = "") {
+      document.getElementById("bloqMatricula").value = matricula || "";
+      document.getElementById("bloqData").value = datauso || "";
+      document.getElementById("bloqMatricula").focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function bloquearDia() {
+      const matricula = document.getElementById("bloqMatricula").value.trim();
+      const datauso = document.getElementById("bloqData").value.trim();
+      const justificativa = document.getElementById("bloqJustificativa").value.trim();
+
+      if (!matricula || !datauso || !justificativa) {
+        alert("Preencha matrícula, data e justificativa.");
+        return;
+      }
+
+      try {
+        setStatus("🔄 Bloqueando dia...", "primary");
+
+        const resp = await fetch(`${BASE_URL}/bloquear-dia`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula") || ""
+          },
+          body: JSON.stringify({ matricula, datauso, justificativa })
+        });
+
+        const json = await resp.json().catch(() => ({}));
+
+        if (!resp.ok || json.ok === false) {
+          throw new Error(json.error || "Erro ao bloquear dia.");
+        }
+
+        alert("✅ Dia bloqueado com sucesso.");
+        setStatus("✅ Bloqueio realizado com sucesso.", "success");
+        document.getElementById("bloqJustificativa").value = "";
+        await carregarBloqueiosAtivos();
+      } catch (err) {
+        console.error(err);
+        alert("❌ " + err.message);
+        setStatus("❌ Erro ao bloquear: " + err.message, "danger");
+      }
+    }
+
+    async function desbloquearDia(matriculaParam, datausoParam) {
+      const matricula = (matriculaParam ?? document.getElementById("bloqMatricula").value).trim();
+      const datauso = (datausoParam ?? document.getElementById("bloqData").value).trim();
+
+      if (!matricula || !datauso) {
+        alert("Preencha matrícula e data para desbloquear.");
+        return;
+      }
+
+      const confirmar = confirm(`Desbloquear ${matricula} na data ${formatarDataBR(datauso)}?`);
+      if (!confirmar) return;
+
+      try {
+        setStatus("🔄 Desbloqueando dia...", "primary");
+
+        const resp = await fetch(`${BASE_URL}/desbloquear-dia`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula") || ""
+          },
+          body: JSON.stringify({ matricula, datauso })
+        });
+
+        const json = await resp.json().catch(() => ({}));
+
+        if (!resp.ok || json.ok === false) {
+          throw new Error(json.error || "Erro ao desbloquear dia.");
+        }
+
+        alert("✅ Dia desbloqueado com sucesso.");
+        setStatus("✅ Desbloqueio realizado com sucesso.", "success");
+        await carregarBloqueiosAtivos();
+      } catch (err) {
+        console.error(err);
+        alert("❌ " + err.message);
+        setStatus("❌ Erro ao desbloquear: " + err.message, "danger");
+      }
+    }
+
+    async function carregarBloqueiosAtivos() {
+      const tbody = document.getElementById("tabelaBloqueios");
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">Carregando bloqueios...</td>
+        </tr>
+      `;
+
+      try {
+        const resp = await fetch(`${BASE_URL}/listar-bloqueios`, {
+          headers: {
+            "X-MATRICULA": localStorage.getItem("matricula") || ""
+          }
+        });
+
+        const json = await resp.json().catch(() => ({}));
+
+        if (!resp.ok || json.ok === false) {
+          throw new Error(json.error || "Erro ao listar bloqueios.");
+        }
+
+        const lista = json.items || [];
+
+        if (!lista.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="text-center text-muted py-3">Nenhum bloqueio ativo.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = lista.map(item => `
+          <tr>
+            <td>
+              <span class="matricula-link" onclick="preencherCamposBloqueio('${escaparHTML(item.matricula)}','${escaparHTML(item.datauso)}')">
+                ${escaparHTML(item.matricula)}
+              </span>
+            </td>
+            <td>${escaparHTML(formatarDataBR(item.datauso))}</td>
+            <td class="just-wrap">${escaparHTML(item.justificativa)}</td>
+            <td>${escaparHTML(item.criado_por ?? "")}</td>
+            <td>${escaparHTML(item.criado_em ?? "")}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-danger" onclick="desbloquearDia('${escaparHTML(item.matricula)}','${escaparHTML(item.datauso)}')">
+                Desbloquear
+              </button>
+            </td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-danger py-3">Erro ao carregar bloqueios.</td>
+          </tr>
+        `;
+      }
+    }
+
     function preencherTabela(lista) {
       const tabela = document.getElementById("tabela");
       tabela.innerHTML = "";
@@ -484,7 +741,11 @@
           <td>${escaparHTML(item.email)}</td>
           <td>${escaparHTML(item.regional)}</td>
           <td>${escaparHTML(item.polo)}</td>
-          <td>${escaparHTML(item.matricula)}</td>
+          <td>
+            <span class="matricula-link" onclick="preencherCamposBloqueio('${escaparHTML(item.matricula)}')">
+              ${escaparHTML(item.matricula)}
+            </span>
+          </td>
           <td>${escaparHTML(formatarDataBR(item.datauso))}</td>
           <td>${escaparHTML(item.tiporefeicao)}</td>
           <td>${escaparHTML(item.horario)}</td>
@@ -826,6 +1087,7 @@
     document.addEventListener("DOMContentLoaded", async () => {
       lerFiltrosDaTela();
       await carregarPagina(1);
+      await carregarBloqueiosAtivos();
     });
 
     document.getElementById("selectPorPagina").addEventListener("change", async () => {
