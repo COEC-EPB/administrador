@@ -511,10 +511,10 @@
 
     document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
-    function logout() {
+    window.logout = function () {
       localStorage.removeItem("matricula");
       window.location.href = "https://coec-epb.github.io/login/";
-    }
+    };
 
     function setStatus(text, type = "primary") {
       const status = document.getElementById("status");
@@ -581,31 +581,31 @@
 
       const valor = String(dataISO).trim();
 
-      if (/^\\d{4}-\\d{2}-\\d{2}$/.test(valor)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
         const [ano, mes, dia] = valor.split("-");
         return `${dia}/${mes}/${ano}`;
       }
 
-      if (/^\\d{4}-\\d{2}-\\d{2}T/.test(valor)) {
+      if (/^\d{4}-\d{2}-\d{2}T/.test(valor)) {
         const parteData = valor.slice(0, 10);
         const [ano, mes, dia] = parteData.split("-");
         return `${dia}/${mes}/${ano}`;
       }
 
-      if (/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(valor)) {
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
         return valor;
       }
 
       return valor;
     }
 
-    function limparCamposBloqueio() {
+    window.limparCamposBloqueio = function () {
       document.getElementById("bloqMatricula").value = "";
       document.getElementById("bloqData").value = "";
       document.getElementById("bloqJustificativa").value = "";
-    }
+    };
 
-    function preencherCamposBloqueio(matricula, datauso = "") {
+    window.preencherCamposBloqueio = function (matricula, datauso = "") {
       document.getElementById("bloqMatricula").value = matricula || "";
       document.getElementById("bloqData").value = datauso || "";
 
@@ -620,9 +620,9 @@
 
       document.getElementById("bloqMatricula").focus();
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    };
 
-    function togglePainelBloqueio() {
+    window.togglePainelBloqueio = function () {
       const painel = document.getElementById("painelBloqueio");
       const painelLista = document.getElementById("painelListaBloqueios");
       const botao = document.getElementById("btnToggleBloqueio");
@@ -641,9 +641,9 @@
         botao.innerText = "🔓 Ocultar bloqueio de colaborador";
         carregarBloqueiosAtivos();
       }
-    }
+    };
 
-    async function bloquearDia() {
+    window.bloquearDia = async function () {
       const matricula = document.getElementById("bloqMatricula").value.trim();
       const datauso = document.getElementById("bloqData").value.trim();
       const justificativa = document.getElementById("bloqJustificativa").value.trim();
@@ -680,9 +680,9 @@
         alert("❌ " + err.message);
         setStatus("❌ Erro ao bloquear: " + err.message, "danger");
       }
-    }
+    };
 
-    async function desbloquearDia(matriculaParam, datausoParam) {
+    window.desbloquearDia = async function (matriculaParam, datausoParam) {
       const matricula = String(matriculaParam ?? document.getElementById("bloqMatricula").value).trim();
       const datauso = String(datausoParam ?? document.getElementById("bloqData").value).trim();
 
@@ -720,9 +720,9 @@
         alert("❌ " + err.message);
         setStatus("❌ Erro ao desbloquear: " + err.message, "danger");
       }
-    }
+    };
 
-    async function carregarBloqueiosAtivos() {
+    window.carregarBloqueiosAtivos = async function () {
       const tbody = document.getElementById("tabelaBloqueios");
       tbody.innerHTML = `
         <tr>
@@ -780,7 +780,7 @@
           </tr>
         `;
       }
-    }
+    };
 
     function preencherTabela(lista) {
       const tabela = document.getElementById("tabela");
@@ -827,11 +827,11 @@
       tabela.innerHTML = linhas;
     }
 
-    function marcarTodos(checkbox) {
+    window.marcarTodos = function (checkbox) {
       document.querySelectorAll(".check-item").forEach(cb => {
         cb.checked = checkbox.checked;
       });
-    }
+    };
 
     document.getElementById("checkTodosFiltrados").addEventListener("change", (e) => {
       const checked = e.target.checked;
@@ -884,7 +884,7 @@
       }
     }
 
-    async function aplicarFiltros() {
+    window.aplicarFiltros = async function () {
       const btn = document.getElementById("btnFiltrar");
       btn.disabled = true;
       btn.innerHTML = "⏳ Aguarde...";
@@ -897,9 +897,9 @@
         btn.disabled = false;
         btn.innerHTML = "🔍 Aplicar";
       }
-    }
+    };
 
-    async function limparFiltros() {
+    window.limparFiltros = async function () {
       document.getElementById("filtroRegional").value = "";
       document.getElementById("filtroPolo").value = "";
       document.getElementById("dataInicio").value = "";
@@ -914,28 +914,28 @@
       lerFiltrosDaTela();
       paginaAtual = 1;
       await carregarPagina(paginaAtual);
-    }
+    };
 
-    async function proximaPagina() {
+    window.proximaPagina = async function () {
       if (paginaAtual < totalPages) {
         await carregarPagina(paginaAtual + 1);
       }
-    }
+    };
 
-    async function paginaAnterior() {
+    window.paginaAnterior = async function () {
       if (paginaAtual > 1) {
         await carregarPagina(paginaAtual - 1);
       }
-    }
+    };
 
-    async function irParaPagina() {
+    window.irParaPagina = async function () {
       const v = Number(document.getElementById("inputIrPagina").value);
 
       if (!Number.isFinite(v) || v < 1) return;
 
       const destino = Math.max(1, Math.min(totalPages, v));
       await carregarPagina(destino);
-    }
+    };
 
     function prepararDadosParaExportacao(lista) {
       return (lista || []).map(item => ({
@@ -957,7 +957,7 @@
       }));
     }
 
-    function baixarXLSXPaginaAtual() {
+    window.baixarXLSXPaginaAtual = function () {
       if (!dadosFiltrados || dadosFiltrados.length === 0) {
         alert("Nenhum dado na página para exportar.");
         return;
@@ -969,9 +969,9 @@
 
       XLSX.utils.book_append_sheet(wb, ws, "Pagina");
       XLSX.writeFile(wb, "registros_ADD_pagina_atual.xlsx");
-    }
+    };
 
-    async function baixarXLSXTudoFiltrado() {
+    window.baixarXLSXTudoFiltrado = async function () {
       lerFiltrosDaTela();
 
       try {
@@ -1033,9 +1033,9 @@
         console.error(err);
         setStatus("❌ Erro ao exportar: " + err.message, "danger");
       }
-    }
+    };
 
-    async function excluirSelecionados() {
+    window.excluirSelecionados = async function () {
       const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
 
       if (selecionados.length === 0) {
@@ -1075,9 +1075,9 @@
         console.error(err);
         alert("❌ Erro ao excluir registros");
       }
-    }
+    };
 
-    async function marcarFiltradosComoSolicitado() {
+    window.marcarFiltradosComoSolicitado = async function () {
       lerFiltrosDaTela();
 
       const marcarTudo = document.getElementById("checkTodosFiltrados").checked;
@@ -1148,7 +1148,7 @@
         alert("❌ Erro: " + err.message);
         setStatus("❌ Erro ao marcar selecionados: " + err.message, "danger");
       }
-    }
+    };
 
     document.addEventListener("DOMContentLoaded", async () => {
       lerFiltrosDaTela();
