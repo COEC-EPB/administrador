@@ -166,10 +166,6 @@
       border:1px solid var(--soft-blue-border);
     }
 
-    .badge-click{
-      cursor:pointer;
-    }
-
     .matricula-link{
       color:var(--energisa-blue-dark);
       font-weight:700;
@@ -188,6 +184,32 @@
     .just-wrap{
       max-width:320px;
       white-space:normal !important;
+    }
+
+    .painel-oculto{
+      display:none;
+    }
+
+    .painel-oculto.show{
+      display:block;
+    }
+
+    .btn-toggle-bloqueio{
+      background:var(--energisa-orange);
+      border:none;
+      color:#fff;
+      padding:10px 16px;
+      border-radius:8px;
+      font-weight:700;
+      transition:.25s;
+    }
+
+    .btn-toggle-bloqueio:hover{
+      background:#d95f1c;
+    }
+
+    .btn-toggle-bloqueio.ativo{
+      background:#b84d14;
     }
 
     @media (max-width: 768px){
@@ -223,7 +245,20 @@
   <div class="container">
     <p id="status" class="status-msg text-danger"></p>
 
-    <div class="filter-card bloqueio-card mb-4">
+    <div class="filter-card mb-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h6 class="m-0">⚙️ Ações administrativas</h6>
+          <p class="filter-sub m-0">Abra o painel de bloqueio apenas quando precisar.</p>
+        </div>
+
+        <button id="btnToggleBloqueio" class="btn-toggle-bloqueio" onclick="togglePainelBloqueio()">
+          🔒 Mostrar bloqueio de colaborador
+        </button>
+      </div>
+    </div>
+
+    <div id="painelBloqueio" class="filter-card bloqueio-card mb-4 painel-oculto">
       <div class="filter-title">
         <div>
           <h6>🔒 Bloqueio de dia por colaborador</h6>
@@ -259,7 +294,7 @@
       </div>
     </div>
 
-    <div class="filter-card bloqueio-lista-card mb-4">
+    <div id="painelListaBloqueios" class="filter-card bloqueio-lista-card mb-4 painel-oculto">
       <div class="filter-title">
         <div>
           <h6>📋 Bloqueios ativos</h6>
@@ -546,18 +581,18 @@
 
       const valor = String(dataISO).trim();
 
-      if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+      if (/^\\d{4}-\\d{2}-\\d{2}$/.test(valor)) {
         const [ano, mes, dia] = valor.split("-");
         return `${dia}/${mes}/${ano}`;
       }
 
-      if (/^\d{4}-\d{2}-\d{2}T/.test(valor)) {
+      if (/^\\d{4}-\\d{2}-\\d{2}T/.test(valor)) {
         const parteData = valor.slice(0, 10);
         const [ano, mes, dia] = parteData.split("-");
         return `${dia}/${mes}/${ano}`;
       }
 
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(valor)) {
+      if (/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(valor)) {
         return valor;
       }
 
@@ -573,8 +608,39 @@
     function preencherCamposBloqueio(matricula, datauso = "") {
       document.getElementById("bloqMatricula").value = matricula || "";
       document.getElementById("bloqData").value = datauso || "";
+
+      const painel = document.getElementById("painelBloqueio");
+      const painelLista = document.getElementById("painelListaBloqueios");
+      const botao = document.getElementById("btnToggleBloqueio");
+
+      painel.classList.add("show");
+      painelLista.classList.add("show");
+      botao.classList.add("ativo");
+      botao.innerText = "🔓 Ocultar bloqueio de colaborador";
+
       document.getElementById("bloqMatricula").focus();
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function togglePainelBloqueio() {
+      const painel = document.getElementById("painelBloqueio");
+      const painelLista = document.getElementById("painelListaBloqueios");
+      const botao = document.getElementById("btnToggleBloqueio");
+
+      const aberto = painel.classList.contains("show");
+
+      if (aberto) {
+        painel.classList.remove("show");
+        painelLista.classList.remove("show");
+        botao.classList.remove("ativo");
+        botao.innerText = "🔒 Mostrar bloqueio de colaborador";
+      } else {
+        painel.classList.add("show");
+        painelLista.classList.add("show");
+        botao.classList.add("ativo");
+        botao.innerText = "🔓 Ocultar bloqueio de colaborador";
+        carregarBloqueiosAtivos();
+      }
     }
 
     async function bloquearDia() {
@@ -617,8 +683,8 @@
     }
 
     async function desbloquearDia(matriculaParam, datausoParam) {
-      const matricula = (matriculaParam ?? document.getElementById("bloqMatricula").value).trim();
-      const datauso = (datausoParam ?? document.getElementById("bloqData").value).trim();
+      const matricula = String(matriculaParam ?? document.getElementById("bloqMatricula").value).trim();
+      const datauso = String(datausoParam ?? document.getElementById("bloqData").value).trim();
 
       if (!matricula || !datauso) {
         alert("Preencha matrícula e data para desbloquear.");
@@ -1087,7 +1153,6 @@
     document.addEventListener("DOMContentLoaded", async () => {
       lerFiltrosDaTela();
       await carregarPagina(1);
-      await carregarBloqueiosAtivos();
     });
 
     document.getElementById("selectPorPagina").addEventListener("change", async () => {
