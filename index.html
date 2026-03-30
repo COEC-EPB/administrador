@@ -19,8 +19,6 @@
       --soft-blue-border:#cfe8f3;
       --soft-green:#f3fff5;
       --soft-green-border:#b7e4c7;
-      --soft-yellow:#fff8e6;
-      --soft-yellow-border:#f2d48a;
     }
 
     body{
@@ -424,7 +422,7 @@
           <h6>🔒 Bloqueio de dia por colaborador</h6>
           <p class="filter-sub">Selecione uma matrícula e use o mini calendário para bloquear, desbloquear ou excluir lançamentos do dia.</p>
         </div>
-        <button class="btn btn-outline-dark btn-sm" onclick="carregarBloqueiosAtivos()">Atualizar bloqueios</button>
+        <button class="btn btn-outline-dark btn-sm" onclick="carregarCalendarioColaborador()">Atualizar calendário</button>
       </div>
 
       <div class="row g-3">
@@ -440,16 +438,16 @@
         </div>
 
         
-      <div class="col-lg-6 col-md-12">
-        <div class="field-label">Justificativa</div>
-        <select id="bloqJustificativa" class="form-control">
-          <option value="" disabled selected>Selecione a justificativa</option>
-          <option value="atestado_medico">Atestado médico</option>
-          <option value="falta">Falta</option>
-          <option value="banco_horas">Utilização do Banco de Horas</option>
-          <option value="medida_disciplinar">Medida disciplinar</option>
-        </select>
-      </div>
+<div class="col-lg-6 col-md-12">
+  <div class="field-label">Justificativa</div>
+  <select id="bloqJustificativa" class="form-control">
+    <option value="" disabled selected>Selecione a justificativa</option>
+    <option value="atestado_medico">1 - Atestado médico</option>
+    <option value="falta">Falta</option>
+    <option value="banco_horas">Utilização do Banco de Horas</option>
+    <option value="medida_disciplinar">Medida disciplinar</option>
+  </select>
+</div>
 
       </div>
 
@@ -459,7 +457,7 @@
         <button class="btn btn-danger" onclick="bloquearDia()">🔒 Bloquear dia</button>
         <button class="btn btn-outline-danger" onclick="desbloquearDia()">🔓 Desbloquear dia</button>
         <button class="btn btn-outline-secondary" onclick="limparCamposBloqueio()">♻️ Limpar campos</button>
-        <button class="btn btn-outline-primary" onclick="carregarCalendarioColaborador()">📅 Atualizar calendário</button>
+        <button class="btn btn-outline-primary" onclick="carregarBloqueiosAtivos()">📋 Consultar bloqueios desta matrícula</button>
       </div>
 
       <div id="calendarioColaboradorBox" class="calendario-wrap mt-3" style="display:none;">
@@ -492,11 +490,11 @@
       </div>
     </div>
 
-    <div id="painelListaBloqueios" class="filter-card bloqueio-lista-card mb-4 painel-oculto">
+    <div id="painelListaBloqueios" class="filter-card bloqueio-lista-card mb-4 painel-oculto" style="display:none;">
       <div class="filter-title">
         <div>
           <h6>📋 Bloqueios ativos</h6>
-          <p class="filter-sub">Veja os bloqueios cadastrados e use a ação rápida para desbloquear.</p>
+          <p class="filter-sub">A lista só aparece quando uma matrícula for consultada.</p>
         </div>
       </div>
 
@@ -514,7 +512,9 @@
           </thead>
           <tbody id="tabelaBloqueios">
             <tr>
-              <td colspan="6" class="text-center text-muted py-3">Carregando bloqueios...</td>
+              <td colspan="6" class="text-center text-muted py-3">
+                Informe uma matrícula para consultar os bloqueios.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -959,6 +959,16 @@
       diaSelecionado = "";
       document.getElementById("calendarioColaboradorBox").style.display = "none";
       document.getElementById("acaoDiaBox").classList.remove("show");
+
+      document.getElementById("painelListaBloqueios").style.display = "none";
+      document.getElementById("painelListaBloqueios").classList.remove("show");
+      document.getElementById("tabelaBloqueios").innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">
+            Informe uma matrícula para consultar os bloqueios.
+          </td>
+        </tr>
+      `;
     };
 
     window.preencherCamposBloqueio = async function (matricula, datauso = "") {
@@ -966,11 +976,9 @@
       document.getElementById("bloqData").value = datauso || "";
 
       const painel = document.getElementById("painelBloqueio");
-      const painelLista = document.getElementById("painelListaBloqueios");
       const botao = document.getElementById("btnToggleBloqueio");
 
       painel.classList.add("show");
-      painelLista.classList.add("show");
       botao.classList.add("ativo");
       botao.innerText = "🔓 Ocultar bloqueio de colaborador";
 
@@ -978,6 +986,7 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
 
       await carregarCalendarioColaborador();
+      await carregarBloqueiosAtivos();
 
       if (datauso) {
         diaSelecionado = datauso;
@@ -998,14 +1007,13 @@
       if (aberto) {
         painel.classList.remove("show");
         painelLista.classList.remove("show");
+        painelLista.style.display = "none";
         botao.classList.remove("ativo");
         botao.innerText = "🔒 Mostrar bloqueio de colaborador";
       } else {
         painel.classList.add("show");
-        painelLista.classList.add("show");
         botao.classList.add("ativo");
         botao.innerText = "🔓 Ocultar bloqueio de colaborador";
-        carregarBloqueiosAtivos();
       }
     };
 
@@ -1029,17 +1037,17 @@
             }
           }),
           fetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`, {
-  headers: {
-    "X-MATRICULA": localStorage.getItem("matricula") || ""
-  }
-})
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
+          })
         ]);
 
         const lancJson = await respLanc.json().catch(() => []);
         const bloqJson = await respBloq.json().catch(() => ({}));
 
         calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
-        calendarioBloqueios = (bloqJson.items || []).filter(item => String(item.matricula || "") === matricula);
+        calendarioBloqueios = bloqJson.items || [];
 
         const dataCampo = document.getElementById("bloqData").value.trim();
         if (dataCampo) {
@@ -1100,8 +1108,8 @@
 
         alert("✅ Dia bloqueado com sucesso.");
         setStatus("✅ Bloqueio realizado com sucesso.", "success");
-        await carregarBloqueiosAtivos();
         await carregarCalendarioColaborador();
+        await carregarBloqueiosAtivos();
       } catch (err) {
         console.error(err);
         alert("❌ " + err.message);
@@ -1141,8 +1149,8 @@
 
         alert("✅ Dia desbloqueado com sucesso.");
         setStatus("✅ Desbloqueio realizado com sucesso.", "success");
-        await carregarBloqueiosAtivos();
         await carregarCalendarioColaborador();
+        await carregarBloqueiosAtivos();
       } catch (err) {
         console.error(err);
         alert("❌ " + err.message);
@@ -1180,7 +1188,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula") || ""
+            "X-MATRICULA": localStorage.getItem("matricula")
           },
           body: JSON.stringify({ ids })
         });
@@ -1204,6 +1212,25 @@
 
     window.carregarBloqueiosAtivos = async function () {
       const tbody = document.getElementById("tabelaBloqueios");
+      const painelLista = document.getElementById("painelListaBloqueios");
+      const matricula = document.getElementById("bloqMatricula").value.trim();
+
+      if (!matricula) {
+        painelLista.style.display = "none";
+        painelLista.classList.remove("show");
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-muted py-3">
+              Informe uma matrícula para consultar os bloqueios.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      painelLista.style.display = "block";
+      painelLista.classList.add("show");
+
       tbody.innerHTML = `
         <tr>
           <td colspan="6" class="text-center text-muted py-3">Carregando bloqueios...</td>
@@ -1211,11 +1238,14 @@
       `;
 
       try {
-        const resp = await fetch(`${BASE_URL}/listar-bloqueios`, {
-          headers: {
-            "X-MATRICULA": localStorage.getItem("matricula") || ""
+        const resp = await fetch(
+          `${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`,
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
           }
-        });
+        );
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1228,7 +1258,9 @@
         if (!lista.length) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="6" class="text-center text-muted py-3">Nenhum bloqueio ativo.</td>
+              <td colspan="6" class="text-center text-muted py-3">
+                Nenhum bloqueio ativo para esta matrícula.
+              </td>
             </tr>
           `;
           return;
@@ -1632,8 +1664,20 @@
 
     document.getElementById("bloqMatricula").addEventListener("blur", async () => {
       const valor = document.getElementById("bloqMatricula").value.trim();
+
       if (valor) {
         await carregarCalendarioColaborador();
+        await carregarBloqueiosAtivos();
+      } else {
+        document.getElementById("painelListaBloqueios").style.display = "none";
+        document.getElementById("painelListaBloqueios").classList.remove("show");
+        document.getElementById("tabelaBloqueios").innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-muted py-3">
+              Informe uma matrícula para consultar os bloqueios.
+            </td>
+          </tr>
+        `;
       }
     });
 
