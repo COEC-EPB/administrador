@@ -1020,11 +1020,11 @@
               "X-MATRICULA": localStorage.getItem("matricula") || ""
             }
           }),
-          fetch(`${BASE_URL}/listar-bloqueios`, {
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula") || ""
-            }
-          })
+          fetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`, {
+  headers: {
+    "X-MATRICULA": localStorage.getItem("matricula") || ""
+  }
+})
         ]);
 
         const lancJson = await respLanc.json().catch(() => []);
