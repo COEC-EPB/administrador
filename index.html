@@ -433,9 +433,14 @@
         </div>
 
         <div class="col-lg-3 col-md-6">
-          <div class="field-label">Data a bloquear</div>
-          <input type="date" id="bloqData" class="form-control">
-        </div>
+  <div class="field-label">Data início</div>
+  <input type="date" id="bloqDataInicio" class="form-control">
+</div>
+
+<div class="col-lg-3 col-md-6">
+  <div class="field-label">Data fim</div>
+  <input type="date" id="bloqDataFim" class="form-control">
+</div>
 
         
 <div class="col-lg-6 col-md-12">
@@ -454,7 +459,7 @@
       <div class="divider"></div>
 
       <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-danger" onclick="bloquearDia()">🔒 Bloquear dia</button>
+        <button class="btn btn-danger" onclick="bloquearPeriodo()">🔒 Bloquear período</button>
         <button class="btn btn-outline-danger" onclick="desbloquearDia()">🔓 Desbloquear dia</button>
         <button class="btn btn-outline-secondary" onclick="limparCamposBloqueio()">♻️ Limpar campos</button>
         <button class="btn btn-outline-primary" onclick="carregarBloqueiosAtivos()">📋 Consultar bloqueios desta matrícula</button>
@@ -482,7 +487,7 @@
           <div class="resumo-dia" id="acaoDiaResumo"></div>
 
           <div class="d-flex gap-2 flex-wrap">
-            <button class="btn btn-danger btn-sm" onclick="bloquearDia()">🔒 Bloquear dia</button>
+            <button class="btn btn-danger btn-sm" onclick="bloquearPeriodo()">🔒 Bloquear período</button>
             <button class="btn btn-outline-danger btn-sm" onclick="desbloquearDia()">🔓 Desbloquear dia</button>
             <button class="btn btn-outline-dark btn-sm" onclick="excluirLancamentosDoDia()">🗑️ Excluir lançamento(s)</button>
           </div>
@@ -1078,44 +1083,56 @@
       }
     };
 
-    window.bloquearDia = async function () {
-      const matricula = document.getElementById("bloqMatricula").value.trim();
-      const datauso = document.getElementById("bloqData").value.trim();
-      const justificativa = document.getElementById("bloqJustificativa").value.trim();
+    window.bloquearPeriodo = async function () {
+  const matricula = document.getElementById("bloqMatricula").value.trim();
+  const dataInicio = document.getElementById("bloqDataInicio").value.trim();
+  const dataFim = document.getElementById("bloqDataFim").value.trim();
+  const justificativa = document.getElementById("bloqJustificativa").value.trim();
 
-      if (!matricula || !datauso || !justificativa) {
-        alert("Preencha matrícula, data e justificativa.");
-        return;
-      }
+  if (!matricula || !dataInicio || !dataFim || !justificativa) {
+    alert("Preencha matrícula, data início, data fim e justificativa.");
+    return;
+  }
 
-      try {
-        setStatus("🔄 Bloqueando dia...", "primary");
+  if (dataFim < dataInicio) {
+    alert("A data fim não pode ser menor que a data início.");
+    return;
+  }
 
-        const resp = await fetch(`${BASE_URL}/bloquear-dia`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula") || ""
-          },
-          body: JSON.stringify({ matricula, datauso, justificativa })
-        });
+  try {
+    setStatus("🔄 Bloqueando período...", "primary");
 
-        const json = await resp.json().catch(() => ({}));
+    const resp = await fetch(`${BASE_URL}/bloquear-periodo`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-MATRICULA": localStorage.getItem("matricula") || ""
+      },
+      body: JSON.stringify({
+        matricula,
+        dataInicio,
+        dataFim,
+        justificativa
+      })
+    });
 
-        if (!resp.ok || json.ok === false) {
-          throw new Error(json.error || "Erro ao bloquear dia.");
-        }
+    const json = await resp.json().catch(() => ({}));
 
-        alert("✅ Dia bloqueado com sucesso.");
-        setStatus("✅ Bloqueio realizado com sucesso.", "success");
-        await carregarCalendarioColaborador();
-        await carregarBloqueiosAtivos();
-      } catch (err) {
-        console.error(err);
-        alert("❌ " + err.message);
-        setStatus("❌ Erro ao bloquear: " + err.message, "danger");
-      }
-    };
+    if (!resp.ok || json.ok === false) {
+      throw new Error(json.error || "Erro ao bloquear período.");
+    }
+
+    alert(`✅ Período bloqueado com sucesso. ${json.totalBloqueados ?? 0} dia(s) afetado(s).`);
+    setStatus("✅ Período bloqueado com sucesso.", "success");
+
+    await carregarCalendarioColaborador();
+    await carregarBloqueiosAtivos();
+  } catch (err) {
+    console.error(err);
+    alert("❌ " + err.message);
+    setStatus("❌ Erro ao bloquear período: " + err.message, "danger");
+  }
+};
 
     window.desbloquearDia = async function (matriculaParam, datausoParam) {
       const matricula = String(matriculaParam ?? document.getElementById("bloqMatricula").value).trim();
