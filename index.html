@@ -1810,6 +1810,11 @@ function pontuarNome(nomeRegistro, termoBusca) {
   paginaAtual = 1;
   await carregarPagina(1);
 });
+    document.getElementById("filtroNome").addEventListener("input", async () => {
+  lerFiltrosDaTela();
+  paginaAtual = 1;
+  await carregarPagina(1);
+});
   </script>
 </body>
 </html>
