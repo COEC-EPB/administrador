@@ -698,6 +698,7 @@
   </div>
 
   <div class="filters-grid">
+
     <div class="filter-col-3">
       <div class="field-label">Regional</div>
       <select id="filtroRegional" class="form-select">
@@ -746,9 +747,10 @@
     <div class="filter-col-5">
       <div class="field-label">Nome</div>
       <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome...">
-      <div class="help">Busca inteligente: ignora acentos, maiúsculas e procura por partes do nome.</div>
+      <div class="help">Busca inteligente: ignora acentos e procura por partes do nome.</div>
     </div>
 
+    <!-- Itens por página -->
     <div class="filter-col-2">
       <div class="field-label">Itens por página</div>
       <select id="selectPorPagina" class="form-select">
@@ -759,14 +761,16 @@
       <div class="help">Afeta paginação e exportação.</div>
     </div>
 
-   <div class="filter-col-2 apply-wrap">
-  <div style="width:100%;">
-    <div class="field-label" style="visibility:hidden;">Aplicar</div>
-    <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
-      🔎 Aplicar
-    </button>
-  </div>
-</div>
+    <!-- BOTÃO PERFEITAMENTE ALINHADO -->
+    <div class="filter-col-2 apply-wrap">
+      <div>
+        <div class="field-label invisible-label">Aplicar</div>
+        <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
+          🔎 Aplicar
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <div class="filters-divider"></div>
@@ -780,12 +784,12 @@
 
     <div class="actions-right">
       <label class="toggle-modern">
-        <input class="form-check-input" type="checkbox" id="checkTodosFiltrados">
+        <input type="checkbox" id="checkTodosFiltrados">
         <span>Selecionar filtrados</span>
       </label>
 
       <label class="toggle-modern">
-        <input class="form-check-input" type="checkbox" id="mostrarSolicitados">
+        <input type="checkbox" id="mostrarSolicitados">
         <span>Mostrar solicitados</span>
       </label>
 
