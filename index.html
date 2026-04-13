@@ -251,15 +251,22 @@
     background:#eef4f8;
   }
 
-  .apply-wrap{
+    .apply-wrap{
     display:flex;
     align-items:end;
   }
-
+  
+  .apply-wrap > div{
+    width:100%;
+  }
+  
   .apply-wrap .btn{
     width:100%;
-    height:46px;
+    min-height:46px;
   }
+   .field-label{
+  min-height:22px;
+}
 
   .table-container{
     max-height:750px;
@@ -752,11 +759,13 @@
       <div class="help">Afeta paginação e exportação.</div>
     </div>
 
-   <div class="filter-col-2">
-  <div class="field-label">&nbsp;</div>
-  <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
-    🔎 Aplicar
-  </button>
+   <div class="filter-col-2 apply-wrap">
+  <div style="width:100%;">
+    <div class="field-label" style="visibility:hidden;">Aplicar</div>
+    <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
+      🔎 Aplicar
+    </button>
+  </div>
 </div>
   </div>
 
