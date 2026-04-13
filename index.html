@@ -374,6 +374,201 @@
         font-size:.8rem;
       }
     }
+    .filters-card{
+  padding:22px;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(15, 23, 42, 0.08);
+  border:1px solid #e9eef3;
+}
+
+.filters-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+.filters-title-wrap h6{
+  margin:0;
+  font-size:1.15rem;
+  font-weight:700;
+  color:#1f2937;
+}
+
+.filters-title-wrap p{
+  margin:4px 0 0;
+  font-size:.9rem;
+  color:#6b7280;
+}
+
+.filters-grid{
+  display:grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap:14px;
+}
+
+.filter-col-3{ grid-column: span 3; }
+.filter-col-4{ grid-column: span 4; }
+.filter-col-5{ grid-column: span 5; }
+.filter-col-6{ grid-column: span 6; }
+.filter-col-12{ grid-column: span 12; }
+
+.field-label{
+  font-weight:700;
+  margin-bottom:6px;
+  color:#1f2937;
+  font-size:.92rem;
+}
+
+.form-control,
+.form-select{
+  border-radius:12px !important;
+  border:1px solid #d7dee7 !important;
+  min-height:46px;
+  padding:10px 14px;
+  font-size:.95rem;
+  box-shadow:none !important;
+  transition:.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus{
+  border-color:#0097CE !important;
+  box-shadow:0 0 0 3px rgba(0,151,206,.12) !important;
+}
+
+.help{
+  font-size:.78rem;
+  color:#7b8794;
+  margin-top:5px;
+  line-height:1.35;
+}
+
+.filters-divider{
+  height:1px;
+  background:#edf2f7;
+  margin:18px 0;
+}
+
+.actions-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.actions-left,
+.actions-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  border-radius:12px !important;
+  font-weight:600;
+  min-height:42px;
+  padding:8px 14px;
+}
+
+.btn-primary{
+  background:#0097CE !important;
+  border-color:#0097CE !important;
+}
+
+.btn-primary:hover{
+  background:#0079a6 !important;
+  border-color:#0079a6 !important;
+}
+
+.btn-soft{
+  background:#f8fafc;
+  border:1px solid #dbe5ee;
+  color:#334155;
+}
+
+.btn-soft:hover{
+  background:#eef4f8;
+}
+
+.toggle-modern{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 12px;
+  border:1px solid #dbe5ee;
+  border-radius:12px;
+  background:#fff;
+  font-size:.92rem;
+  color:#334155;
+}
+
+.toggle-modern input{
+  margin:0;
+}
+
+.apply-wrap{
+  display:flex;
+  justify-content:flex-end;
+  align-items:end;
+  height:100%;
+}
+
+.apply-wrap .btn{
+  width:100%;
+  min-height:46px;
+}
+
+@media (max-width: 1200px){
+  .filter-col-3,
+  .filter-col-4,
+  .filter-col-5,
+  .filter-col-6{
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 768px){
+  .filters-card{
+    padding:16px;
+    border-radius:14px;
+  }
+
+  .filters-grid{
+    grid-template-columns: 1fr;
+    gap:12px;
+  }
+
+  .filter-col-3,
+  .filter-col-4,
+  .filter-col-5,
+  .filter-col-6,
+  .filter-col-12{
+    grid-column: span 1;
+  }
+
+  .actions-bar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .actions-left,
+  .actions-right{
+    width:100%;
+  }
+
+  .actions-left .btn,
+  .actions-right .btn,
+  .toggle-modern{
+    width:100%;
+    justify-content:center;
+  }
+}
   </style>
 </head>
 
@@ -519,125 +714,108 @@
       </div>
     </div>
 
-    <div class="filter-card mb-4">
-      <div class="filter-title">
-        <div>
-          <h6>🔎 Filtros</h6>
-          <p class="filter-sub">Use os filtros e clique em <b>Aplicar</b>. Solicitados ficam ocultos por padrão.</p>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-lg-3 col-md-6">
-          <div class="field-label">Regional</div>
-          <select id="filtroRegional" class="form-select">
-            <option value="">Todas</option>
-            <option>LESTE</option>
-            <option>CENTRO</option>
-            <option>OESTE</option>
-          </select>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-          <div class="field-label">Polo</div>
-          <select id="filtroPolo" class="form-select">
-            <option value="">Todos</option>
-            <option>João Pessoa</option>
-            <option>Itabaiana</option>
-            <option>Mamanguape</option>
-            <option>Borborema</option>
-            <option>Campina Grande</option>
-            <option>Monteiro</option>
-            <option>Guarabira</option>
-            <option>Esperança</option>
-            <option>Itaporanga</option>
-            <option>Sousa</option>
-            <option>Patos</option>
-            <option>Catolé do Rocha</option>
-          </select>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-          <div class="field-label">Data inicial</div>
-          <input id="dataInicio" type="date" class="form-control">
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-          <div class="field-label">Data final</div>
-          <input id="dataFim" type="date" class="form-control">
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-<div class="row g-3 align-items-end">
-  <div class="col-lg-3 col-md-6">
-    <div class="field-label">Matrícula</div>
-    <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula" />
-    <div class="help">Se vazio, o sistema ignora este filtro.</div>
+    <div class="filters-card mb-4">
+  <div class="filters-header">
+    <div class="filters-title-wrap">
+      <h6>🔎 Filtros</h6>
+      <p>Refine a busca por regional, polo, período, matrícula ou nome.</p>
+    </div>
   </div>
 
-  <div class="col-lg-5 col-md-6">
-    <div class="field-label">Nome</div>
-    <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome..." />
-    <div class="help">Busca inteligente: ignora acentos, maiúsculas e procura por partes do nome.</div>
-  </div>
+  <div class="filters-grid">
+    <div class="filter-col-3">
+      <div class="field-label">Regional</div>
+      <select id="filtroRegional" class="form-select">
+        <option value="">Todas</option>
+        <option>LESTE</option>
+        <option>CENTRO</option>
+        <option>OESTE</option>
+      </select>
+    </div>
 
-  <div class="col-lg-2 col-md-6">
-    <div class="field-label">Itens por página</div>
-    <select id="selectPorPagina" class="form-select">
-      <option value="50" selected>50</option>
-      <option value="100">100</option>
-      <option value="200">200</option>
-    </select>
-    <div class="help">Afeta paginação e baixar tudo.</div>
-  </div>
+    <div class="filter-col-3">
+      <div class="field-label">Polo</div>
+      <select id="filtroPolo" class="form-select">
+        <option value="">Todos</option>
+        <option>João Pessoa</option>
+        <option>Itabaiana</option>
+        <option>Mamanguape</option>
+        <option>Borborema</option>
+        <option>Campina Grande</option>
+        <option>Monteiro</option>
+        <option>Guarabira</option>
+        <option>Esperança</option>
+        <option>Itaporanga</option>
+        <option>Sousa</option>
+        <option>Patos</option>
+        <option>Catolé do Rocha</option>
+      </select>
+    </div>
 
-  <div class="col-lg-2 col-md-6">
-    <div class="actions-wrap" style="justify-content:flex-start;">
-      <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
-        🔍 Aplicar
+    <div class="filter-col-3">
+      <div class="field-label">Data inicial</div>
+      <input id="dataInicio" type="date" class="form-control">
+    </div>
+
+    <div class="filter-col-3">
+      <div class="field-label">Data final</div>
+      <input id="dataFim" type="date" class="form-control">
+    </div>
+
+    <div class="filter-col-3">
+      <div class="field-label">Matrícula</div>
+      <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula">
+      <div class="help">Se vazio, esse filtro será ignorado.</div>
+    </div>
+
+    <div class="filter-col-5">
+      <div class="field-label">Nome</div>
+      <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome...">
+      <div class="help">Busca inteligente: ignora acentos, maiúsculas e procura por partes do nome.</div>
+    </div>
+
+    <div class="filter-col-2">
+      <div class="field-label">Itens por página</div>
+      <select id="selectPorPagina" class="form-select">
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+      </select>
+      <div class="help">Afeta paginação e exportação.</div>
+    </div>
+
+    <div class="filter-col-2 apply-wrap">
+      <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
+        🔎 Aplicar
       </button>
     </div>
   </div>
-</div>
 
-<div class="row g-3 mt-1">
-  <div class="col-12">
-    <div class="actions-wrap">
-      <button class="btn btn-outline-secondary" onclick="limparFiltros()">
-        ♻️ Limpar
-      </button>
+  <div class="filters-divider"></div>
 
-      <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">
-        ⬇️ Página
-      </button>
+  <div class="actions-bar">
+    <div class="actions-left">
+      <button class="btn btn-soft" onclick="limparFiltros()">♻️ Limpar</button>
+      <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Página</button>
+      <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo</button>
+    </div>
 
-      <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">
-        ⬇️ Baixar tudo
-      </button>
-
-      <label class="toggle">
+    <div class="actions-right">
+      <label class="toggle-modern">
         <input class="form-check-input" type="checkbox" id="checkTodosFiltrados">
-        <span class="form-check-label">Selecionar filtrados</span>
+        <span>Selecionar filtrados</span>
       </label>
 
-      <label class="toggle">
+      <label class="toggle-modern">
         <input class="form-check-input" type="checkbox" id="mostrarSolicitados">
-        <span class="form-check-label">Mostrar solicitados</span>
+        <span>Mostrar solicitados</span>
       </label>
 
-      <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">
-        ✅ Marcar como solicitado
-      </button>
-
-      <button class="btn btn-danger" onclick="excluirSelecionados()">
-        🗑️ Excluir
-      </button>
+      <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">✅ Marcar como solicitado</button>
+      <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir</button>
     </div>
   </div>
 </div>
-    </div>
 
     <div class="pager">
       <div class="left">
