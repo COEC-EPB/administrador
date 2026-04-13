@@ -801,8 +801,7 @@ function pontuarNome(nomeRegistro, termoBusca) {
   if (filtros.regional) p.set("regional", filtros.regional);
   if (filtros.polo) p.set("polo", filtros.polo);
   if (filtros.matricula) p.set("matricula", filtros.matricula);
-  if (filtros.nome) p.set("nome", filtros.nome); // 👈 AQUI
-
+  if (filtros.nome) p.set("nome", filtros.nome);
   if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
   if (filtros.dataFim) p.set("dataFim", filtros.dataFim);
 
@@ -816,7 +815,7 @@ function pontuarNome(nomeRegistro, termoBusca) {
   }
 
   return p.toString();
-}
+
 
     function atualizarUIpaginacao() {
       document.getElementById("infoPaginacao").innerText =
