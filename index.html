@@ -515,13 +515,14 @@
 .apply-wrap{
   display:flex;
   justify-content:flex-end;
-  align-items:end;
+  align-items:flex-end; /* alinha com os inputs */
   height:100%;
 }
 
 .apply-wrap .btn{
   width:100%;
   min-height:46px;
+  height:46px; /* igual aos inputs */
 }
 
 @media (max-width: 1200px){
@@ -784,7 +785,7 @@
       <div class="help">Afeta paginação e exportação.</div>
     </div>
 
-    <div class="filter-col-2 apply-wrap">
+    <div class="filter-col-2 apply-wrap" style="align-self:end;">
       <button id="btnFiltrar" class="btn btn-primary" onclick="aplicarFiltros()">
         🔎 Aplicar
       </button>
