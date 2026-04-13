@@ -796,25 +796,27 @@ function pontuarNome(nomeRegistro, termoBusca) {
 }
 
     function montarQS(page, semPaginacao = false) {
-      const p = new URLSearchParams();
+  const p = new URLSearchParams();
 
-      if (filtros.regional) p.set("regional", filtros.regional);
-      if (filtros.polo) p.set("polo", filtros.polo);
-      if (filtros.matricula) p.set("matricula", filtros.matricula);
-      if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
-      if (filtros.dataFim) p.set("dataFim", filtros.dataFim);
+  if (filtros.regional) p.set("regional", filtros.regional);
+  if (filtros.polo) p.set("polo", filtros.polo);
+  if (filtros.matricula) p.set("matricula", filtros.matricula);
+  if (filtros.nome) p.set("nome", filtros.nome); // 👈 AQUI
 
-      if (filtros.mostrarSolicitados) {
-        p.set("mostrarSolicitados", "1");
-      }
+  if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
+  if (filtros.dataFim) p.set("dataFim", filtros.dataFim);
 
-      if (!semPaginacao) {
-        p.set("page", String(page));
-        p.set("limit", String(filtros.limit));
-      }
+  if (filtros.mostrarSolicitados) {
+    p.set("mostrarSolicitados", "1");
+  }
 
-      return p.toString();
-    }
+  if (!semPaginacao) {
+    p.set("page", String(page));
+    p.set("limit", String(filtros.limit));
+  }
+
+  return p.toString();
+}
 
     function atualizarUIpaginacao() {
       document.getElementById("infoPaginacao").innerText =
@@ -1459,12 +1461,6 @@ function pontuarNome(nomeRegistro, termoBusca) {
     const payload = await resp.json();
 
     let itens = payload.items || [];
-
-    if (filtros.nome) {
-      itens = itens
-        .filter(item => nomePassaFiltroInteligente(item.nome || "", filtros.nome))
-        .sort((a, b) => pontuarNome(b.nome || "", filtros.nome) - pontuarNome(a.nome || "", filtros.nome));
-    }
 
     dadosFiltrados = itens;
     paginaAtual = Number(payload.page || page);
