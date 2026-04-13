@@ -8,543 +8,548 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
- <style>
-  :root{
-    --energisa-blue:#0097CE;
-    --energisa-blue-dark:#0079a6;
-    --energisa-orange:#F36F21;
-
-    --bg-page:#f4f6f9;
-    --bg-card:#fff;
-    --text:#1f2937;
-    --text-muted:#6b7280;
-    --border:#dbe5ee;
-    --border-soft:#e9eef3;
-
-    --soft-red:#fff5f5;
-    --soft-red-border:#f3c6c6;
-    --soft-blue:#f3fafe;
-    --soft-blue-border:#cfe8f3;
-    --soft-green:#f3fff5;
-    --soft-green-border:#b7e4c7;
-
-    --cal-normal:#f1f3f5;
-    --cal-add:#d1e7dd;
-    --cal-add-text:#0f5132;
-    --cal-block:#f8d7da;
-    --cal-block-text:#842029;
-    --cal-mixed:#fff3cd;
-    --cal-mixed-text:#7c5c00;
-
-    --radius-sm:8px;
-    --radius-md:12px;
-    --radius-lg:16px;
-
-    --shadow-sm:0 2px 5px rgba(0,0,0,.15);
-    --shadow-md:0 8px 24px rgba(15,23,42,.08);
-  }
-
-  body{
-    background:var(--bg-page);
-    font-family:"Segoe UI",sans-serif;
-    color:var(--text);
-  }
-
-  .container{
-    max-width:97%;
-    margin-top:25px;
-  }
-
-  .topbar{
-    background:var(--energisa-blue);
-    color:#fff;
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    border-bottom:4px solid var(--energisa-orange);
-  }
-
-  .logout-btn,
-  .btn-toggle-bloqueio{
-    border:none;
-    color:#fff;
-    font-weight:700;
-    transition:.25s;
-  }
-
-  .logout-btn{
-    background:var(--energisa-orange);
-    padding:8px 15px;
-    border-radius:6px;
-  }
-
-  .logout-btn:hover,
-  .btn-toggle-bloqueio:hover{
-    background:#d95f1c;
-  }
-
-  .btn-toggle-bloqueio{
-    background:var(--energisa-orange);
-    padding:10px 16px;
-    border-radius:var(--radius-sm);
-  }
-
-  .btn-toggle-bloqueio.ativo{
-    background:#b84d14;
-  }
-
-  .filter-card,
-  .filters-card{
-    background:var(--bg-card);
-    border-radius:var(--radius-lg);
-    padding:22px;
-    border:1px solid var(--border-soft);
-    box-shadow:var(--shadow-md);
-  }
-
-  .filter-title,
-  .filters-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:18px;
-  }
-
-  .filter-title h6,
-  .filters-title-wrap h6{
-    margin:0;
-    font-size:1.1rem;
-    font-weight:700;
-    color:var(--text);
-  }
-
-  .filter-sub,
-  .filters-title-wrap p,
-  .muted{
-    margin:4px 0 0;
-    font-size:.9rem;
-    color:var(--text-muted);
-  }
-
-  .field-label{
-    font-weight:700;
-    margin-bottom:6px;
-    color:var(--text);
-    font-size:.92rem;
-  }
-
-  .help{
-    min-height:18px;
-    margin-top:5px;
-    font-size:.78rem;
-    line-height:1.35;
-    color:#7b8794;
-  }
-
-  .divider,
-  .filters-divider{
-    height:1px;
-    background:#edf2f7;
-    border:0;
-    margin:18px 0;
-  }
-
-  .filters-grid{
-    display:grid;
-    grid-template-columns:repeat(12, minmax(0, 1fr));
-    gap:14px;
-    align-items:end;
-  }
-
-  .filter-col-3{ grid-column:span 3; }
-  .filter-col-4{ grid-column:span 4; }
-  .filter-col-5{ grid-column:span 5; }
-  .filter-col-6{ grid-column:span 6; }
-  .filter-col-12{ grid-column:span 12; }
-
-  .form-control,
-  .form-select{
-    min-height:46px;
-    padding:10px 14px;
-    font-size:.95rem;
-    border-radius:var(--radius-md) !important;
-    border:1px solid #d7dee7 !important;
-    box-shadow:none !important;
-    transition:.2s ease;
-  }
-
-  .form-control:focus,
-  .form-select:focus{
-    border-color:var(--energisa-blue) !important;
-    box-shadow:0 0 0 3px rgba(0,151,206,.12) !important;
-  }
-
-  .actions-wrap,
-  .actions-bar,
-  .actions-left,
-  .actions-right{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-
-  .actions-wrap{
-    justify-content:flex-end;
-  }
-
-  .actions-bar{
-    justify-content:space-between;
-  }
-
-  .toggle,
-  .toggle-modern{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin:0;
-    white-space:nowrap;
-  }
-
-  .toggle-modern{
-    padding:9px 12px;
-    border:1px solid var(--border);
-    border-radius:var(--radius-md);
-    background:#fff;
-    font-size:.92rem;
-    color:#334155;
-  }
-
-  .toggle-modern input{
-    margin:0;
-  }
-
-  .btn{
-    min-height:42px;
-    padding:8px 14px;
-    font-weight:600;
-    border-radius:var(--radius-md) !important;
-  }
-
-  .btn-primary{
-    background:var(--energisa-blue) !important;
-    border-color:var(--energisa-blue) !important;
-  }
-
-  .btn-primary:hover{
-    background:var(--energisa-blue-dark) !important;
-    border-color:var(--energisa-blue-dark) !important;
-  }
-
-  .btn-soft{
-    background:#f8fafc;
-    border:1px solid var(--border);
-    color:#334155;
-  }
-
-  .btn-soft:hover{
-    background:#eef4f8;
-  }
-
-    .apply-wrap{
-    display:flex;
-    align-items:end;
-  }
-  
-  .apply-wrap > div{
-    width:100%;
-  }
-  
-  .apply-wrap .btn{
-    width:100%;
-    min-height:46px;
-  }
-   .field-label{
-  min-height:22px;
-}
-
-  .table-container{
-    max-height:750px;
-    overflow:auto;
-    background:#fff;
-    border:2px solid #ddd;
-    border-radius:6px;
-  }
-
-  table td,
-  table th{
-    padding:10px;
-    font-size:.9rem;
-    white-space:nowrap;
-    vertical-align:middle;
-  }
-
-  .pager{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    padding:10px 0;
-    flex-wrap:wrap;
-  }
-
-  .pager .left,
-  .pager .right{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-
-  .status-msg{
-    min-height:24px;
-  }
-
-  .bloqueio-card{
-    background:var(--soft-red);
-    border:1px solid var(--soft-red-border);
-  }
-
-  .bloqueio-lista-card{
-    background:var(--soft-blue);
-    border:1px solid var(--soft-blue-border);
-  }
-
-  .matricula-link{
-    color:var(--energisa-blue-dark);
-    font-weight:700;
-    cursor:pointer;
-    text-decoration:underline;
-  }
-
-  .mini-table-wrap{
-    max-height:320px;
-    overflow:auto;
-    background:#fff;
-    border:1px solid #dee2e6;
-    border-radius:var(--radius-sm);
-  }
-
-  .just-wrap{
-    max-width:320px;
-    white-space:normal !important;
-  }
-
-  .painel-oculto{
-    display:none;
-  }
-
-  .painel-oculto.show,
-  .acao-dia-box.show{
-    display:block;
-  }
-
-  .calendario-wrap{
-    margin-top:18px;
-    padding:14px;
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:var(--radius-md);
-  }
-
-  .cal-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
-  }
-
-  .cal-head strong{
-    font-size:1rem;
-    color:#1f2d3d;
-    text-transform:capitalize;
-  }
-
-  .cal-nav-btn{
-    padding:6px 10px;
-    font-weight:700;
-    cursor:pointer;
-    background:#fff;
-    border:1px solid #ced4da;
-    border-radius:var(--radius-sm);
-  }
-
-  .cal-nav-btn:hover{
-    background:#f1f3f5;
-  }
-
-  .cal-grid{
-    display:grid;
-    grid-template-columns:repeat(7, 1fr);
-    gap:6px;
-  }
-
-  .cal-weekday{
-    padding:4px 0;
-    text-align:center;
-    font-size:.78rem;
-    font-weight:700;
-    color:#6c757d;
-  }
-
-  .cal-dia-vazio{
-    height:38px;
-  }
-
-  .cal-dia{
-    height:38px;
-    border:none;
-    border-radius:10px;
-    font-size:.85rem;
-    font-weight:600;
-    cursor:pointer;
-    transition:.2s;
-    background:var(--cal-normal);
-    color:#343a40;
-  }
-
-  .cal-dia:hover{
-    transform:translateY(-1px);
-    box-shadow:0 2px 6px rgba(0,0,0,.12);
-  }
-
-  .cal-dia.normal{
-    background:var(--cal-normal);
-    color:#343a40;
-  }
-
-  .cal-dia.add{
-    background:var(--cal-add);
-    color:var(--cal-add-text);
-  }
-
-  .cal-dia.bloqueado{
-    background:var(--cal-block);
-    color:var(--cal-block-text);
-  }
-
-  .cal-dia.add-bloqueado{
-    background:var(--cal-mixed);
-    color:var(--cal-mixed-text);
-  }
-
-  .cal-dia.selecionado{
-    outline:3px solid var(--energisa-blue);
-  }
-
-  .legenda-cal{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-top:12px;
-    font-size:.82rem;
-    color:#495057;
-  }
-
-  .legenda-item{
-    display:flex;
-    align-items:center;
-    gap:6px;
-  }
-
-  .legenda-cor{
-    width:14px;
-    height:14px;
-    display:inline-block;
-    border-radius:4px;
-    border:1px solid rgba(0,0,0,.08);
-  }
-
-  .acao-dia-box{
-    display:none;
-    margin-top:14px;
-    padding:12px;
-    background:#f8f9fa;
-    border:1px solid #dee2e6;
-    border-radius:10px;
-  }
-
-  .acao-dia-title{
-    margin-bottom:8px;
-    font-weight:700;
-  }
-
-  .resumo-dia{
-    margin-bottom:10px;
-    font-size:.9rem;
-    line-height:1.5;
-    color:#495057;
-  }
-
-  .resumo-dia ul{
-    margin:8px 0 0 18px;
-  }
-
-  @media (max-width: 1200px){
-    .filter-col-3,
-    .filter-col-4,
-    .filter-col-5,
-    .filter-col-6{
-      grid-column:span 6;
+  <style>
+    :root{
+      --energisa-blue:#0097CE;
+      --energisa-blue-dark:#0079a6;
+      --energisa-orange:#F36F21;
+
+      --bg-page:#f4f6f9;
+      --bg-card:#fff;
+      --text:#1f2937;
+      --text-muted:#6b7280;
+      --border:#dbe5ee;
+      --border-soft:#e9eef3;
+
+      --soft-red:#fff5f5;
+      --soft-red-border:#f3c6c6;
+      --soft-blue:#f3fafe;
+      --soft-blue-border:#cfe8f3;
+      --soft-green:#f3fff5;
+      --soft-green-border:#b7e4c7;
+
+      --cal-normal:#f1f3f5;
+      --cal-add:#d1e7dd;
+      --cal-add-text:#0f5132;
+      --cal-block:#f8d7da;
+      --cal-block-text:#842029;
+      --cal-mixed:#fff3cd;
+      --cal-mixed-text:#7c5c00;
+
+      --radius-sm:8px;
+      --radius-md:12px;
+      --radius-lg:16px;
+
+      --shadow-sm:0 2px 5px rgba(0,0,0,.15);
+      --shadow-md:0 8px 24px rgba(15,23,42,.08);
     }
-  }
 
-  @media (max-width: 768px){
+    body{
+      background:var(--bg-page);
+      font-family:"Segoe UI",sans-serif;
+      color:var(--text);
+    }
+
+    .container{
+      max-width:97%;
+      margin-top:25px;
+    }
+
     .topbar{
-      align-items:flex-start;
+      background:var(--energisa-blue);
+      color:#fff;
+      padding:15px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      border-bottom:4px solid var(--energisa-orange);
     }
 
-    .actions-wrap{
-      justify-content:flex-start;
+    .logout-btn,
+    .btn-toggle-bloqueio{
+      border:none;
+      color:#fff;
+      font-weight:700;
+      transition:.25s;
     }
 
+    .logout-btn{
+      background:var(--energisa-orange);
+      padding:8px 15px;
+      border-radius:6px;
+    }
+
+    .logout-btn:hover,
+    .btn-toggle-bloqueio:hover{
+      background:#d95f1c;
+    }
+
+    .btn-toggle-bloqueio{
+      background:var(--energisa-orange);
+      padding:10px 16px;
+      border-radius:var(--radius-sm);
+    }
+
+    .btn-toggle-bloqueio.ativo{
+      background:#b84d14;
+    }
+
+    .filter-card,
     .filters-card{
-      padding:16px;
-      border-radius:14px;
+      background:var(--bg-card);
+      border-radius:var(--radius-lg);
+      padding:22px;
+      border:1px solid var(--border-soft);
+      box-shadow:var(--shadow-md);
+    }
+
+    .filter-title,
+    .filters-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .filter-title h6,
+    .filters-title-wrap h6{
+      margin:0;
+      font-size:1.1rem;
+      font-weight:700;
+      color:var(--text);
+    }
+
+    .filter-sub,
+    .filters-title-wrap p,
+    .muted{
+      margin:4px 0 0;
+      font-size:.9rem;
+      color:var(--text-muted);
+    }
+
+    .field-label{
+      font-weight:700;
+      margin-bottom:6px;
+      color:var(--text);
+      font-size:.92rem;
+      min-height:22px;
+    }
+
+    .invisible-label{
+      visibility:hidden;
+    }
+
+    .help{
+      min-height:18px;
+      margin-top:5px;
+      font-size:.78rem;
+      line-height:1.35;
+      color:#7b8794;
+    }
+
+    .divider,
+    .filters-divider{
+      height:1px;
+      background:#edf2f7;
+      border:0;
+      margin:18px 0;
     }
 
     .filters-grid{
-      grid-template-columns:1fr;
-      gap:12px;
+      display:grid;
+      grid-template-columns:repeat(12, minmax(0, 1fr));
+      gap:14px;
+      align-items:end;
     }
 
-    .filter-col-3,
-    .filter-col-4,
-    .filter-col-5,
-    .filter-col-6,
-    .filter-col-12{
-      grid-column:span 1;
+    .filter-col-2{ grid-column:span 2; }
+    .filter-col-3{ grid-column:span 3; }
+    .filter-col-4{ grid-column:span 4; }
+    .filter-col-5{ grid-column:span 5; }
+    .filter-col-6{ grid-column:span 6; }
+    .filter-col-12{ grid-column:span 12; }
+
+    .form-control,
+    .form-select{
+      min-height:46px;
+      padding:10px 14px;
+      font-size:.95rem;
+      border-radius:var(--radius-md) !important;
+      border:1px solid #d7dee7 !important;
+      box-shadow:none !important;
+      transition:.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus{
+      border-color:var(--energisa-blue) !important;
+      box-shadow:0 0 0 3px rgba(0,151,206,.12) !important;
+    }
+
+    .actions-wrap,
+    .actions-bar,
+    .actions-left,
+    .actions-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .actions-wrap{
+      justify-content:flex-end;
     }
 
     .actions-bar{
-      flex-direction:column;
-      align-items:stretch;
+      justify-content:space-between;
     }
 
-    .actions-left,
-    .actions-right{
-      width:100%;
-    }
-
-    .actions-left .btn,
-    .actions-right .btn,
+    .toggle,
     .toggle-modern{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:0;
+      white-space:nowrap;
+    }
+
+    .toggle-modern{
+      padding:9px 12px;
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      background:#fff;
+      font-size:.92rem;
+      color:#334155;
+    }
+
+    .toggle-modern input{
+      margin:0;
+    }
+
+    .btn{
+      min-height:42px;
+      padding:8px 14px;
+      font-weight:600;
+      border-radius:var(--radius-md) !important;
+    }
+
+    .btn-primary{
+      background:var(--energisa-blue) !important;
+      border-color:var(--energisa-blue) !important;
+    }
+
+    .btn-primary:hover{
+      background:var(--energisa-blue-dark) !important;
+      border-color:var(--energisa-blue-dark) !important;
+    }
+
+    .btn-soft{
+      background:#f8fafc;
+      border:1px solid var(--border);
+      color:#334155;
+    }
+
+    .btn-soft:hover{
+      background:#eef4f8;
+    }
+
+    .apply-wrap{
+      display:flex;
+      align-items:end;
+    }
+
+    .apply-wrap > div{
       width:100%;
-      justify-content:center;
+    }
+
+    .apply-wrap .btn{
+      width:100%;
+      min-height:46px;
+    }
+
+    .table-container{
+      max-height:750px;
+      overflow:auto;
+      background:#fff;
+      border:2px solid #ddd;
+      border-radius:6px;
+    }
+
+    table td,
+    table th{
+      padding:10px;
+      font-size:.9rem;
+      white-space:nowrap;
+      vertical-align:middle;
+    }
+
+    .pager{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:10px 0;
+      flex-wrap:wrap;
+    }
+
+    .pager .left,
+    .pager .right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .status-msg{
+      min-height:24px;
+    }
+
+    .bloqueio-card{
+      background:var(--soft-red);
+      border:1px solid var(--soft-red-border);
+    }
+
+    .bloqueio-lista-card{
+      background:var(--soft-blue);
+      border:1px solid var(--soft-blue-border);
+    }
+
+    .matricula-link{
+      color:var(--energisa-blue-dark);
+      font-weight:700;
+      cursor:pointer;
+      text-decoration:underline;
+    }
+
+    .mini-table-wrap{
+      max-height:320px;
+      overflow:auto;
+      background:#fff;
+      border:1px solid #dee2e6;
+      border-radius:var(--radius-sm);
+    }
+
+    .just-wrap{
+      max-width:320px;
+      white-space:normal !important;
+    }
+
+    .painel-oculto{
+      display:none;
+    }
+
+    .painel-oculto.show,
+    .acao-dia-box.show{
+      display:block;
+    }
+
+    .calendario-wrap{
+      margin-top:18px;
+      padding:14px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+    }
+
+    .cal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .cal-head strong{
+      font-size:1rem;
+      color:#1f2d3d;
+      text-transform:capitalize;
+    }
+
+    .cal-nav-btn{
+      padding:6px 10px;
+      font-weight:700;
+      cursor:pointer;
+      background:#fff;
+      border:1px solid #ced4da;
+      border-radius:var(--radius-sm);
+    }
+
+    .cal-nav-btn:hover{
+      background:#f1f3f5;
+    }
+
+    .cal-grid{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      gap:6px;
+    }
+
+    .cal-weekday{
+      padding:4px 0;
+      text-align:center;
+      font-size:.78rem;
+      font-weight:700;
+      color:#6c757d;
+    }
+
+    .cal-dia-vazio{
+      height:38px;
     }
 
     .cal-dia{
-      height:34px;
-      font-size:.8rem;
+      height:38px;
+      border:none;
+      border-radius:10px;
+      font-size:.85rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:.2s;
+      background:var(--cal-normal);
+      color:#343a40;
     }
-  }
-</style>
+
+    .cal-dia:hover{
+      transform:translateY(-1px);
+      box-shadow:0 2px 6px rgba(0,0,0,.12);
+    }
+
+    .cal-dia.normal{
+      background:var(--cal-normal);
+      color:#343a40;
+    }
+
+    .cal-dia.add{
+      background:var(--cal-add);
+      color:var(--cal-add-text);
+    }
+
+    .cal-dia.bloqueado{
+      background:var(--cal-block);
+      color:var(--cal-block-text);
+    }
+
+    .cal-dia.add-bloqueado{
+      background:var(--cal-mixed);
+      color:var(--cal-mixed-text);
+    }
+
+    .cal-dia.selecionado{
+      outline:3px solid var(--energisa-blue);
+    }
+
+    .legenda-cal{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:12px;
+      font-size:.82rem;
+      color:#495057;
+    }
+
+    .legenda-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .legenda-cor{
+      width:14px;
+      height:14px;
+      display:inline-block;
+      border-radius:4px;
+      border:1px solid rgba(0,0,0,.08);
+    }
+
+    .acao-dia-box{
+      display:none;
+      margin-top:14px;
+      padding:12px;
+      background:#f8f9fa;
+      border:1px solid #dee2e6;
+      border-radius:10px;
+    }
+
+    .acao-dia-title{
+      margin-bottom:8px;
+      font-weight:700;
+    }
+
+    .resumo-dia{
+      margin-bottom:10px;
+      font-size:.9rem;
+      line-height:1.5;
+      color:#495057;
+    }
+
+    .resumo-dia ul{
+      margin:8px 0 0 18px;
+    }
+
+    @media (max-width: 1200px){
+      .filter-col-2,
+      .filter-col-3,
+      .filter-col-4,
+      .filter-col-5,
+      .filter-col-6{
+        grid-column:span 6;
+      }
+    }
+
+    @media (max-width: 768px){
+      .topbar{
+        align-items:flex-start;
+      }
+
+      .actions-wrap{
+        justify-content:flex-start;
+      }
+
+      .filters-card{
+        padding:16px;
+        border-radius:14px;
+      }
+
+      .filters-grid{
+        grid-template-columns:1fr;
+        gap:12px;
+      }
+
+      .filter-col-2,
+      .filter-col-3,
+      .filter-col-4,
+      .filter-col-5,
+      .filter-col-6,
+      .filter-col-12{
+        grid-column:span 1;
+      }
+
+      .actions-bar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .actions-left,
+      .actions-right{
+        width:100%;
+      }
+
+      .actions-left .btn,
+      .actions-right .btn,
+      .toggle-modern{
+        width:100%;
+        justify-content:center;
+      }
+
+      .cal-dia{
+        height:34px;
+        font-size:.8rem;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -690,114 +695,110 @@
     </div>
 
     <div class="filters-card mb-4">
-  <div class="filters-header">
-    <div class="filters-title-wrap">
-      <h6>🔎 Filtros</h6>
-      <p>Refine a busca por regional, polo, período, matrícula ou nome.</p>
-    </div>
-  </div>
+      <div class="filters-header">
+        <div class="filters-title-wrap">
+          <h6>🔎 Filtros</h6>
+          <p>Refine a busca por regional, polo, período, matrícula ou nome.</p>
+        </div>
+      </div>
 
-  <div class="filters-grid">
+      <div class="filters-grid">
+        <div class="filter-col-3">
+          <div class="field-label">Regional</div>
+          <select id="filtroRegional" class="form-select">
+            <option value="">Todas</option>
+            <option>LESTE</option>
+            <option>CENTRO</option>
+            <option>OESTE</option>
+          </select>
+        </div>
 
-    <div class="filter-col-3">
-      <div class="field-label">Regional</div>
-      <select id="filtroRegional" class="form-select">
-        <option value="">Todas</option>
-        <option>LESTE</option>
-        <option>CENTRO</option>
-        <option>OESTE</option>
-      </select>
-    </div>
+        <div class="filter-col-3">
+          <div class="field-label">Polo</div>
+          <select id="filtroPolo" class="form-select">
+            <option value="">Todos</option>
+            <option>João Pessoa</option>
+            <option>Itabaiana</option>
+            <option>Mamanguape</option>
+            <option>Borborema</option>
+            <option>Campina Grande</option>
+            <option>Monteiro</option>
+            <option>Guarabira</option>
+            <option>Esperança</option>
+            <option>Itaporanga</option>
+            <option>Sousa</option>
+            <option>Patos</option>
+            <option>Catolé do Rocha</option>
+          </select>
+        </div>
 
-    <div class="filter-col-3">
-      <div class="field-label">Polo</div>
-      <select id="filtroPolo" class="form-select">
-        <option value="">Todos</option>
-        <option>João Pessoa</option>
-        <option>Itabaiana</option>
-        <option>Mamanguape</option>
-        <option>Borborema</option>
-        <option>Campina Grande</option>
-        <option>Monteiro</option>
-        <option>Guarabira</option>
-        <option>Esperança</option>
-        <option>Itaporanga</option>
-        <option>Sousa</option>
-        <option>Patos</option>
-        <option>Catolé do Rocha</option>
-      </select>
-    </div>
+        <div class="filter-col-3">
+          <div class="field-label">Data inicial</div>
+          <input id="dataInicio" type="date" class="form-control">
+        </div>
 
-    <div class="filter-col-3">
-      <div class="field-label">Data inicial</div>
-      <input id="dataInicio" type="date" class="form-control">
-    </div>
+        <div class="filter-col-3">
+          <div class="field-label">Data final</div>
+          <input id="dataFim" type="date" class="form-control">
+        </div>
 
-    <div class="filter-col-3">
-      <div class="field-label">Data final</div>
-      <input id="dataFim" type="date" class="form-control">
-    </div>
+        <div class="filter-col-3">
+          <div class="field-label">Matrícula</div>
+          <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula">
+          <div class="help">Se vazio, esse filtro será ignorado.</div>
+        </div>
 
-    <div class="filter-col-3">
-      <div class="field-label">Matrícula</div>
-      <input type="text" id="filtroMatricula" class="form-control" placeholder="Digite a matrícula">
-      <div class="help">Se vazio, esse filtro será ignorado.</div>
-    </div>
+        <div class="filter-col-5">
+          <div class="field-label">Nome</div>
+          <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome...">
+          <div class="help">Busca inteligente: ignora acentos e procura por partes do nome.</div>
+        </div>
 
-    <div class="filter-col-5">
-      <div class="field-label">Nome</div>
-      <input type="text" id="filtroNome" class="form-control" placeholder="Digite o nome...">
-      <div class="help">Busca inteligente: ignora acentos e procura por partes do nome.</div>
-    </div>
+        <div class="filter-col-2">
+          <div class="field-label">Itens por página</div>
+          <select id="selectPorPagina" class="form-select">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+          <div class="help">Afeta paginação e exportação.</div>
+        </div>
 
-    <!-- Itens por página -->
-    <div class="filter-col-2">
-      <div class="field-label">Itens por página</div>
-      <select id="selectPorPagina" class="form-select">
-        <option value="50" selected>50</option>
-        <option value="100">100</option>
-        <option value="200">200</option>
-      </select>
-      <div class="help">Afeta paginação e exportação.</div>
-    </div>
+        <div class="filter-col-2 apply-wrap">
+          <div>
+            <div class="field-label invisible-label">Aplicar</div>
+            <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
+              🔎 Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
 
-    <!-- BOTÃO PERFEITAMENTE ALINHADO -->
-    <div class="filter-col-2 apply-wrap">
-      <div>
-        <div class="field-label invisible-label">Aplicar</div>
-        <button id="btnFiltrar" class="btn btn-primary w-100" onclick="aplicarFiltros()">
-          🔎 Aplicar
-        </button>
+      <div class="filters-divider"></div>
+
+      <div class="actions-bar">
+        <div class="actions-left">
+          <button class="btn btn-soft" onclick="limparFiltros()">♻️ Limpar</button>
+          <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Página</button>
+          <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo</button>
+        </div>
+
+        <div class="actions-right">
+          <label class="toggle-modern">
+            <input type="checkbox" id="checkTodosFiltrados">
+            <span>Selecionar filtrados</span>
+          </label>
+
+          <label class="toggle-modern">
+            <input type="checkbox" id="mostrarSolicitados">
+            <span>Mostrar solicitados</span>
+          </label>
+
+          <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">✅ Marcar como solicitado</button>
+          <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir</button>
+        </div>
       </div>
     </div>
-
-  </div>
-
-  <div class="filters-divider"></div>
-
-  <div class="actions-bar">
-    <div class="actions-left">
-      <button class="btn btn-soft" onclick="limparFiltros()">♻️ Limpar</button>
-      <button class="btn btn-success" onclick="baixarXLSXPaginaAtual()">⬇️ Página</button>
-      <button class="btn btn-outline-success" onclick="baixarXLSXTudoFiltrado()">⬇️ Baixar tudo</button>
-    </div>
-
-    <div class="actions-right">
-      <label class="toggle-modern">
-        <input type="checkbox" id="checkTodosFiltrados">
-        <span>Selecionar filtrados</span>
-      </label>
-
-      <label class="toggle-modern">
-        <input type="checkbox" id="mostrarSolicitados">
-        <span>Mostrar solicitados</span>
-      </label>
-
-      <button class="btn btn-warning" onclick="marcarFiltradosComoSolicitado()">✅ Marcar como solicitado</button>
-      <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Excluir</button>
-    </div>
-  </div>
-</div>
 
     <div class="pager">
       <div class="left">
@@ -863,15 +864,15 @@
     let diaSelecionado = "";
 
     const filtros = {
-  regional: "",
-  polo: "",
-  matricula: "",
-  nome: "",
-  dataInicio: "",
-  dataFim: "",
-  limit: 50,
-  mostrarSolicitados: false
-};
+      regional: "",
+      polo: "",
+      matricula: "",
+      nome: "",
+      dataInicio: "",
+      dataFim: "",
+      limit: 50,
+      mostrarSolicitados: false
+    };
 
     const matriculaLogin = localStorage.getItem("matricula");
 
@@ -892,46 +893,46 @@
     };
 
     function normalizarTextoBusca(texto) {
-  return String(texto || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, " ");
-}
+      return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, " ");
+    }
 
-function nomePassaFiltroInteligente(nomeRegistro, termoBusca) {
-  const nome = normalizarTextoBusca(nomeRegistro);
-  const busca = normalizarTextoBusca(termoBusca);
+    function nomePassaFiltroInteligente(nomeRegistro, termoBusca) {
+      const nome = normalizarTextoBusca(nomeRegistro);
+      const busca = normalizarTextoBusca(termoBusca);
 
-  if (!busca) return true;
-  if (!nome) return false;
+      if (!busca) return true;
+      if (!nome) return false;
 
-  const partesBusca = busca.split(" ").filter(Boolean);
-  return partesBusca.every(parte => nome.includes(parte));
-}
+      const partesBusca = busca.split(" ").filter(Boolean);
+      return partesBusca.every(parte => nome.includes(parte));
+    }
 
-function pontuarNome(nomeRegistro, termoBusca) {
-  const nome = normalizarTextoBusca(nomeRegistro);
-  const busca = normalizarTextoBusca(termoBusca);
+    function pontuarNome(nomeRegistro, termoBusca) {
+      const nome = normalizarTextoBusca(nomeRegistro);
+      const busca = normalizarTextoBusca(termoBusca);
 
-  if (!busca) return 0;
-  if (!nome) return -1;
+      if (!busca) return 0;
+      if (!nome) return -1;
 
-  let score = 0;
+      let score = 0;
 
-  if (nome === busca) score += 100;
-  if (nome.startsWith(busca)) score += 50;
-  if (nome.includes(busca)) score += 30;
+      if (nome === busca) score += 100;
+      if (nome.startsWith(busca)) score += 50;
+      if (nome.includes(busca)) score += 30;
 
-  const partesBusca = busca.split(" ").filter(Boolean);
-  for (const parte of partesBusca) {
-    if (nome.startsWith(parte)) score += 10;
-    else if (nome.includes(parte)) score += 5;
-  }
+      const partesBusca = busca.split(" ").filter(Boolean);
+      for (const parte of partesBusca) {
+        if (nome.startsWith(parte)) score += 10;
+        else if (nome.includes(parte)) score += 5;
+      }
 
-  return score;
-}
+      return score;
+    }
 
     function setStatus(text, type = "primary") {
       const status = document.getElementById("status");
@@ -945,37 +946,37 @@ function pontuarNome(nomeRegistro, termoBusca) {
     }
 
     function lerFiltrosDaTela() {
-  filtros.regional = document.getElementById("filtroRegional").value.trim();
-  filtros.polo = document.getElementById("filtroPolo").value.trim();
-  filtros.dataInicio = document.getElementById("dataInicio").value;
-  filtros.dataFim = document.getElementById("dataFim").value;
-  filtros.matricula = document.getElementById("filtroMatricula").value.trim();
-  filtros.nome = document.getElementById("filtroNome").value.trim();
-  filtros.limit = getLimit();
-  filtros.mostrarSolicitados = document.getElementById("mostrarSolicitados").checked;
-}
+      filtros.regional = document.getElementById("filtroRegional").value.trim();
+      filtros.polo = document.getElementById("filtroPolo").value.trim();
+      filtros.dataInicio = document.getElementById("dataInicio").value;
+      filtros.dataFim = document.getElementById("dataFim").value;
+      filtros.matricula = document.getElementById("filtroMatricula").value.trim();
+      filtros.nome = document.getElementById("filtroNome").value.trim();
+      filtros.limit = getLimit();
+      filtros.mostrarSolicitados = document.getElementById("mostrarSolicitados").checked;
+    }
 
     function montarQS(page, semPaginacao = false) {
-  const p = new URLSearchParams();
+      const p = new URLSearchParams();
 
-  if (filtros.regional) p.set("regional", filtros.regional);
-  if (filtros.polo) p.set("polo", filtros.polo);
-  if (filtros.matricula) p.set("matricula", filtros.matricula);
-  if (filtros.nome) p.set("nome", filtros.nome);
-  if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
-  if (filtros.dataFim) p.set("dataFim", filtros.dataFim);
+      if (filtros.regional) p.set("regional", filtros.regional);
+      if (filtros.polo) p.set("polo", filtros.polo);
+      if (filtros.matricula) p.set("matricula", filtros.matricula);
+      if (filtros.nome) p.set("nome", filtros.nome);
+      if (filtros.dataInicio) p.set("dataInicio", filtros.dataInicio);
+      if (filtros.dataFim) p.set("dataFim", filtros.dataFim);
 
-  if (filtros.mostrarSolicitados) {
-    p.set("mostrarSolicitados", "1");
-  }
+      if (filtros.mostrarSolicitados) {
+        p.set("mostrarSolicitados", "1");
+      }
 
-  if (!semPaginacao) {
-    p.set("page", String(page));
-    p.set("limit", String(filtros.limit));
-  }
+      if (!semPaginacao) {
+        p.set("page", String(page));
+        p.set("limit", String(filtros.limit));
+      }
 
-  return p.toString();
-}
+      return p.toString();
+    }
 
     function atualizarUIpaginacao() {
       document.getElementById("infoPaginacao").innerText =
@@ -1597,46 +1598,46 @@ function pontuarNome(nomeRegistro, termoBusca) {
     });
 
     async function carregarPagina(page) {
-  const btnFiltrar = document.getElementById("btnFiltrar");
-  btnFiltrar.disabled = true;
+      const btnFiltrar = document.getElementById("btnFiltrar");
+      btnFiltrar.disabled = true;
 
-  try {
-    setStatus("🔄 Carregando dados...", "primary");
+      try {
+        setStatus("🔄 Carregando dados...", "primary");
 
-    const resp = await fetch(
-      `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-      {
-        headers: {
-          "X-MATRICULA": localStorage.getItem("matricula")
+        const resp = await fetch(
+          `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
+          }
+        );
+
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${t}`);
         }
+
+        const payload = await resp.json();
+
+        let itens = payload.items || [];
+
+        dadosFiltrados = itens;
+        paginaAtual = Number(payload.page || page);
+        totalPages = Number(payload.totalPages || 1);
+        totalItems = Number(payload.totalItems || itens.length);
+
+        preencherTabela(dadosFiltrados);
+        atualizarUIpaginacao();
+
+        setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
+      } finally {
+        btnFiltrar.disabled = false;
       }
-    );
-
-    if (!resp.ok) {
-      const t = await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${t}`);
     }
-
-    const payload = await resp.json();
-
-    let itens = payload.items || [];
-
-    dadosFiltrados = itens;
-    paginaAtual = Number(payload.page || page);
-    totalPages = Number(payload.totalPages || 1);
-    totalItems = filtros.nome ? itens.length : Number(payload.totalItems || itens.length);
-
-    preencherTabela(dadosFiltrados);
-    atualizarUIpaginacao();
-
-    setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
-  } catch (err) {
-    console.error(err);
-    setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
-  } finally {
-    btnFiltrar.disabled = false;
-  }
-}
 
     window.aplicarFiltros = async function () {
       const btn = document.getElementById("btnFiltrar");
@@ -1654,22 +1655,22 @@ function pontuarNome(nomeRegistro, termoBusca) {
     };
 
     window.limparFiltros = async function () {
-  document.getElementById("filtroRegional").value = "";
-  document.getElementById("filtroPolo").value = "";
-  document.getElementById("dataInicio").value = "";
-  document.getElementById("dataFim").value = "";
-  document.getElementById("filtroMatricula").value = "";
-  document.getElementById("filtroNome").value = "";
-  document.getElementById("selectPorPagina").value = "50";
-  document.getElementById("mostrarSolicitados").checked = false;
-  document.getElementById("checkTodosFiltrados").checked = false;
-  document.getElementById("checkTodos").checked = false;
-  document.getElementById("inputIrPagina").value = "";
+      document.getElementById("filtroRegional").value = "";
+      document.getElementById("filtroPolo").value = "";
+      document.getElementById("dataInicio").value = "";
+      document.getElementById("dataFim").value = "";
+      document.getElementById("filtroMatricula").value = "";
+      document.getElementById("filtroNome").value = "";
+      document.getElementById("selectPorPagina").value = "50";
+      document.getElementById("mostrarSolicitados").checked = false;
+      document.getElementById("checkTodosFiltrados").checked = false;
+      document.getElementById("checkTodos").checked = false;
+      document.getElementById("inputIrPagina").value = "";
 
-  lerFiltrosDaTela();
-  paginaAtual = 1;
-  await carregarPagina(paginaAtual);
-};
+      lerFiltrosDaTela();
+      paginaAtual = 1;
+      await carregarPagina(paginaAtual);
+    };
 
     window.proximaPagina = async function () {
       if (paginaAtual < totalPages) {
@@ -1960,16 +1961,18 @@ function pontuarNome(nomeRegistro, termoBusca) {
       paginaAtual = 1;
       await carregarPagina(1);
     });
+
     document.getElementById("filtroMatricula").addEventListener("input", async () => {
-  lerFiltrosDaTela();
-  paginaAtual = 1;
-  await carregarPagina(1);
-});
+      lerFiltrosDaTela();
+      paginaAtual = 1;
+      await carregarPagina(1);
+    });
+
     document.getElementById("filtroNome").addEventListener("input", async () => {
-  lerFiltrosDaTela();
-  paginaAtual = 1;
-  await carregarPagina(1);
-});
+      lerFiltrosDaTela();
+      paginaAtual = 1;
+      await carregarPagina(1);
+    });
   </script>
 </body>
 </html>
