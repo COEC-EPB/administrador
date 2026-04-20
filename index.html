@@ -614,7 +614,7 @@
 
         <div class="col-lg-3 col-md-6">
           <div class="field-label">Justificativa</div>
-          <select id="bloqJustificativa" class="form-control">
+          <select id="bloqJustificativa" class="form-select">
             <option value="" disabled selected>Selecione a justificativa</option>
             <option value="atestado_medico">Atestado médico</option>
             <option value="falta">Falta injustificada</option>
@@ -844,35 +844,22 @@
   </div>
 
   <script>
-    async function validarSessao() {
-  try {
-    const resp = await fetch(`${BASE_URL}/me`, {
-      credentials: "include"
-    });
-
-    if (!resp.ok) {
-      window.location.href = "https://coec-epb.github.io/login/";
-      return;
-    }
-
-    const data = await resp.json();
-
-    if (!data.user || data.user.role !== "admin") {
-      alert("Acesso negado");
-      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
-      return;
-    }
-
-    document.getElementById("userInfo").innerText =
-      `Logado como: ${data.user.matricula}`;
-  } catch {
-    window.location.href = "https://coec-epb.github.io/login/";
-  }
-}
-    
-
+    // =========================
+    // CONFIG
+    // =========================
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
+    // Helper para garantir cookies (sessão) em TODOS os fetch
+    async function fetchAuth(url, options = {}) {
+      return fetch(url, {
+        credentials: "include",
+        ...options
+      });
+    }
+
+    // =========================
+    // ESTADO
+    // =========================
     let paginaAtual = 1;
     let totalPages = 1;
     let totalItems = 0;
@@ -895,59 +882,41 @@
       mostrarSolicitados: false
     };
 
-       document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
+    // =========================
+    // AUTH / SESSÃO
+    // =========================
+    async function validarSessao() {
+      try {
+        const resp = await fetchAuth(`${BASE_URL}/me`, { method: "GET" });
+
+        if (!resp.ok) {
+          window.location.href = "https://coec-epb.github.io/login/";
+          return;
+        }
+
+        const data = await resp.json().catch(() => ({}));
+
+        if (!data.user || data.user.role !== "admin") {
+          alert("Acesso negado");
+          window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
+          return;
+        }
+
+        document.getElementById("userInfo").innerText =
+          `Logado como: ${data.user.matricula}`;
+      } catch {
+        window.location.href = "https://coec-epb.github.io/login/";
+      }
+    }
 
     window.logout = async function () {
-  await fetch(`${BASE_URL}/logout`, {
-    method: "POST",
-    credentials: "include"
-  });
+      await fetchAuth(`${BASE_URL}/logout`, { method: "POST" });
+      window.location.href = "https://coec-epb.github.io/login/";
+    };
 
-  window.location.href = "https://coec-epb.github.io/login/";
-};
-
-    function normalizarTextoBusca(texto) {
-      return String(texto || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, " ");
-    }
-
-    function nomePassaFiltroInteligente(nomeRegistro, termoBusca) {
-      const nome = normalizarTextoBusca(nomeRegistro);
-      const busca = normalizarTextoBusca(termoBusca);
-
-      if (!busca) return true;
-      if (!nome) return false;
-
-      const partesBusca = busca.split(" ").filter(Boolean);
-      return partesBusca.every(parte => nome.includes(parte));
-    }
-
-    function pontuarNome(nomeRegistro, termoBusca) {
-      const nome = normalizarTextoBusca(nomeRegistro);
-      const busca = normalizarTextoBusca(termoBusca);
-
-      if (!busca) return 0;
-      if (!nome) return -1;
-
-      let score = 0;
-
-      if (nome === busca) score += 100;
-      if (nome.startsWith(busca)) score += 50;
-      if (nome.includes(busca)) score += 30;
-
-      const partesBusca = busca.split(" ").filter(Boolean);
-      for (const parte of partesBusca) {
-        if (nome.startsWith(parte)) score += 10;
-        else if (nome.includes(parte)) score += 5;
-      }
-
-      return score;
-    }
-
+    // =========================
+    // HELPERS
+    // =========================
     function setStatus(text, type = "primary") {
       const status = document.getElementById("status");
       status.className = "status-msg fw-bold text-" + type;
@@ -1012,7 +981,6 @@
 
     function formatarDataBR(dataISO) {
       if (!dataISO) return "";
-
       const valor = String(dataISO).trim();
 
       if (/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
@@ -1040,6 +1008,9 @@
       });
     }
 
+    // =========================
+    // CALENDÁRIO
+    // =========================
     function setWeekdays() {
       const el = document.getElementById("calWeekdays");
       el.innerHTML = ["D","S","T","Q","Q","S","S"]
@@ -1138,17 +1109,11 @@
         const bloqueio = getBloqueioDoDia(dataISO);
 
         let classe = "cal-dia normal";
-        if (lancamentos.length > 0 && bloqueio) {
-          classe = "cal-dia add-bloqueado";
-        } else if (bloqueio) {
-          classe = "cal-dia bloqueado";
-        } else if (lancamentos.length > 0) {
-          classe = "cal-dia add";
-        }
+        if (lancamentos.length > 0 && bloqueio) classe = "cal-dia add-bloqueado";
+        else if (bloqueio) classe = "cal-dia bloqueado";
+        else if (lancamentos.length > 0) classe = "cal-dia add";
 
-        if (diaSelecionado === dataISO) {
-          classe += " selecionado";
-        }
+        if (diaSelecionado === dataISO) classe += " selecionado";
 
         const btn = document.createElement("button");
         btn.type = "button";
@@ -1259,20 +1224,12 @@
 
       try {
         setStatus("🔄 Carregando calendário do colaborador...", "primary");
-
         calendarioMatriculaAtual = matricula;
 
         const [respLanc, respBloq] = await Promise.all([
-          fetch(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`, {
-            fetch(url, {
-  method: "GET",
-  credentials: "include"
-})
-          }),
-          fetch(`${BASE_URL}/listar-bloqueios?...`, {
-  method: "GET",
-  credentials: "include"
-});
+          fetchAuth(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`, { method: "GET" }),
+          fetchAuth(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`, { method: "GET" })
+        ]);
 
         const lancJson = await respLanc.json().catch(() => []);
         const bloqJson = await respBloq.json().catch(() => ({}));
@@ -1305,7 +1262,7 @@
         setStatus("✅ Calendário carregado.", "success");
       } catch (err) {
         console.error(err);
-        setStatus("❌ Erro ao carregar calendário: " + err.message, "danger");
+        setStatus("❌ Erro ao carregar calendário: " + (err?.message || err), "danger");
       }
     };
 
@@ -1328,19 +1285,11 @@
       try {
         setStatus("🔄 Bloqueando período...", "primary");
 
-        const resp = await fetch(`${BASE_URL}/bloquear-periodo`, {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    matricula,
-    dataInicio,
-    dataFim,
-    justificativa
-  })
-});
+        const resp = await fetchAuth(`${BASE_URL}/bloquear-periodo`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matricula, dataInicio, dataFim, justificativa })
+        });
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1354,8 +1303,8 @@
         await carregarBloqueiosAtivos();
       } catch (err) {
         console.error(err);
-        alert("❌ " + err.message);
-        setStatus("❌ Erro ao bloquear período: " + err.message, "danger");
+        alert("❌ " + (err?.message || err));
+        setStatus("❌ Erro ao bloquear período: " + (err?.message || err), "danger");
       }
     };
 
@@ -1382,21 +1331,10 @@
       try {
         setStatus("🔄 Desbloqueando período...", "primary");
 
-        const resp = await fetch(`${BASE_URL}/desbloquear-periodo`, {
+        const resp = await fetchAuth(`${BASE_URL}/desbloquear-periodo`, {
           method: "POST",
-          fetch(url, {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(dados)
-}),
-          body: JSON.stringify({
-            matricula,
-            dataInicio,
-            dataFim
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matricula, dataInicio, dataFim })
         });
 
         const json = await resp.json().catch(() => ({}));
@@ -1411,8 +1349,8 @@
         await carregarBloqueiosAtivos();
       } catch (err) {
         console.error(err);
-        alert("❌ " + err.message);
-        setStatus("❌ Erro ao desbloquear período: " + err.message, "danger");
+        alert("❌ " + (err?.message || err));
+        setStatus("❌ Erro ao desbloquear período: " + (err?.message || err), "danger");
       }
     };
 
@@ -1442,12 +1380,9 @@
 
         const ids = lancamentos.map(x => x.id).filter(Boolean);
 
-        const resp = await fetch(`${BASE_URL}/excluir`, {
+        const resp = await fetchAuth(`${BASE_URL}/excluir`, {
           method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids })
         });
 
@@ -1463,8 +1398,8 @@
         await carregarCalendarioColaborador();
       } catch (err) {
         console.error(err);
-        alert("❌ " + err.message);
-        setStatus("❌ Erro ao excluir lançamento(s): " + err.message, "danger");
+        alert("❌ " + (err?.message || err));
+        setStatus("❌ Erro ao excluir lançamento(s): " + (err?.message || err), "danger");
       }
     };
 
@@ -1496,14 +1431,9 @@
       `;
 
       try {
-        const resp = await fetch(
+        const resp = await fetchAuth(
           `${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`,
-          {
-            fetch(url, {
-  method: "GET",
-  credentials: "include"
-})
-          }
+          { method: "GET" }
         );
 
         const json = await resp.json().catch(() => ({}));
@@ -1525,24 +1455,30 @@
           return;
         }
 
-        tbody.innerHTML = lista.map(item => `
-          <tr>
-            <td>
-              <span class="matricula-link" onclick="preencherCamposBloqueio('${escaparHTML(item.matricula)}','${escaparHTML(item.datauso)}')">
-                ${escaparHTML(item.matricula)}
-              </span>
-            </td>
-            <td>${escaparHTML(formatarDataBR(item.datauso))}</td>
-            <td class="just-wrap">${escaparHTML(item.justificativa)}</td>
-            <td>${escaparHTML(item.criado_por ?? "")}</td>
-            <td>${escaparHTML(item.criado_em ?? "")}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-danger" onclick="preencherCamposBloqueio('${escaparHTML(item.matricula)}','${escaparHTML(item.datauso)}')">
-                Selecionar
-              </button>
-            </td>
-          </tr>
-        `).join("");
+        tbody.innerHTML = lista.map(item => {
+          const m = String(item.matricula ?? "");
+          const d = String(item.datauso ?? "");
+          const onclick = `preencherCamposBloqueio(${JSON.stringify(m)}, ${JSON.stringify(d)})`;
+
+          return `
+            <tr>
+              <td>
+                <span class="matricula-link" onclick='${onclick}'>
+                  ${escaparHTML(m)}
+                </span>
+              </td>
+              <td>${escaparHTML(formatarDataBR(d))}</td>
+              <td class="just-wrap">${escaparHTML(item.justificativa ?? "")}</td>
+              <td>${escaparHTML(item.criado_por ?? "")}</td>
+              <td>${escaparHTML(item.criado_em ?? "")}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-danger" onclick='${onclick}'>
+                  Selecionar
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
       } catch (err) {
         console.error(err);
         tbody.innerHTML = `
@@ -1553,6 +1489,9 @@
       }
     };
 
+    // =========================
+    // TABELA
+    // =========================
     function preencherTabela(lista) {
       const tabela = document.getElementById("tabela");
       tabela.innerHTML = "";
@@ -1568,32 +1507,37 @@
         return;
       }
 
-      const linhas = lista.map(item => `
-        <tr>
-          <td class="text-center">
-            <input type="checkbox" class="check-item" value="${escaparHTML(item.id)}">
-          </td>
-          <td>${escaparHTML(item.id)}</td>
-          <td>${escaparHTML(item.nome)}</td>
-          <td>${escaparHTML(item.email)}</td>
-          <td>${escaparHTML(item.regional)}</td>
-          <td>${escaparHTML(item.polo)}</td>
-          <td>
-            <span class="matricula-link" onclick="preencherCamposBloqueio('${escaparHTML(item.matricula)}')">
-              ${escaparHTML(item.matricula)}
-            </span>
-          </td>
-          <td>${escaparHTML(formatarDataBR(item.datauso))}</td>
-          <td>${escaparHTML(item.tiporefeicao)}</td>
-          <td>${escaparHTML(item.horario)}</td>
-          <td>${escaparHTML(item.localidade)}</td>
-          <td>${escaparHTML(item.gps)}</td>
-          <td>${escaparHTML(item.sequencia)}</td>
-          <td>${escaparHTML(item.osrrss)}</td>
-          <td>${escaparHTML(item.numeroadd)}</td>
-          <td>${escaparHTML(item.solicitado)}</td>
-        </tr>
-      `).join("");
+      const linhas = lista.map(item => {
+        const m = String(item.matricula ?? "");
+        const onclick = `preencherCamposBloqueio(${JSON.stringify(m)})`;
+
+        return `
+          <tr>
+            <td class="text-center">
+              <input type="checkbox" class="check-item" value="${escaparHTML(item.id)}">
+            </td>
+            <td>${escaparHTML(item.id)}</td>
+            <td>${escaparHTML(item.nome)}</td>
+            <td>${escaparHTML(item.email)}</td>
+            <td>${escaparHTML(item.regional)}</td>
+            <td>${escaparHTML(item.polo)}</td>
+            <td>
+              <span class="matricula-link" onclick='${onclick}'>
+                ${escaparHTML(m)}
+              </span>
+            </td>
+            <td>${escaparHTML(formatarDataBR(item.datauso))}</td>
+            <td>${escaparHTML(item.tiporefeicao)}</td>
+            <td>${escaparHTML(item.horario)}</td>
+            <td>${escaparHTML(item.localidade)}</td>
+            <td>${escaparHTML(item.gps)}</td>
+            <td>${escaparHTML(item.sequencia)}</td>
+            <td>${escaparHTML(item.osrrss)}</td>
+            <td>${escaparHTML(item.numeroadd)}</td>
+            <td>${escaparHTML(item.solicitado)}</td>
+          </tr>
+        `;
+      }).join("");
 
       tabela.innerHTML = linhas;
     }
@@ -1615,6 +1559,9 @@
       if (checkTodos) checkTodos.checked = checked;
     });
 
+    // =========================
+    // BUSCA / PAGINAÇÃO
+    // =========================
     async function carregarPagina(page) {
       const btnFiltrar = document.getElementById("btnFiltrar");
       btnFiltrar.disabled = true;
@@ -1622,22 +1569,16 @@
       try {
         setStatus("🔄 Carregando dados...", "primary");
 
-        const resp = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-          {
-            fetch(url, {
-  method: "GET",
-  credentials: "include"
-})
-          }
-        );
+        const resp = await fetchAuth(`${BASE_URL}/buscar-todos?${montarQS(page)}`, {
+          method: "GET"
+        });
 
         if (!resp.ok) {
-          const t = await resp.text();
+          const t = await resp.text().catch(() => "");
           throw new Error(`HTTP ${resp.status}: ${t}`);
         }
 
-        const payload = await resp.json();
+        const payload = await resp.json().catch(() => ({}));
 
         let itens = payload.items || [];
 
@@ -1652,7 +1593,7 @@
         setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
       } catch (err) {
         console.error(err);
-        setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
+        setStatus("❌ Erro ao carregar dados: " + (err?.message || err), "danger");
       } finally {
         btnFiltrar.disabled = false;
       }
@@ -1669,7 +1610,7 @@
         await carregarPagina(paginaAtual);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = "🔍 Aplicar";
+        btn.innerHTML = "🔎 Aplicar";
       }
     };
 
@@ -1712,6 +1653,9 @@
       await carregarPagina(destino);
     };
 
+    // =========================
+    // EXPORTAÇÃO
+    // =========================
     function prepararDadosParaExportacao(lista) {
       return (lista || []).map(item => ({
         ID: item.id ?? "",
@@ -1752,42 +1696,26 @@
       try {
         setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        const resp1 = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
-          {
-            fetch(url, {
-  method: "GET",
-  credentials: "include"
-})
-          }
-        );
+        const resp1 = await fetchAuth(`${BASE_URL}/buscar-todos?${montarQS(1)}`, { method: "GET" });
 
         if (!resp1.ok) {
           throw new Error("Falha ao iniciar exportação");
         }
 
-        const payload1 = await resp1.json();
+        const payload1 = await resp1.json().catch(() => ({}));
         const tp = Number(payload1.totalPages || 1);
         const tudo = [...(payload1.items || [])];
 
         setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
 
         for (let page = 2; page <= tp; page++) {
-          const resp = await fetch(
-            `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-            {
-              fetch(url, {
-  method: "GET",
-  credentials: "include"
-})
-            }
-          );
+          const resp = await fetchAuth(`${BASE_URL}/buscar-todos?${montarQS(page)}`, { method: "GET" });
 
           if (!resp.ok) {
             throw new Error(`Falha ao buscar página ${page}`);
           }
 
-          const payload = await resp.json();
+          const payload = await resp.json().catch(() => ({}));
           tudo.push(...(payload.items || []));
           setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
         }
@@ -1808,10 +1736,13 @@
         setStatus(`✅ Exportado com sucesso (${tudoFormatado.length} registros)`, "success");
       } catch (err) {
         console.error(err);
-        setStatus("❌ Erro ao exportar: " + err.message, "danger");
+        setStatus("❌ Erro ao exportar: " + (err?.message || err), "danger");
       }
     };
 
+    // =========================
+    // AÇÕES EM MASSA
+    // =========================
     window.excluirSelecionados = async function () {
       const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
 
@@ -1827,16 +1758,9 @@
       if (!confirmar) return;
 
       try {
-        const resp = await fetch(`${BASE_URL}/excluir`, {
+        const resp = await fetchAuth(`${BASE_URL}/excluir`, {
           method: "POST",
-          fetch(url, {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(dados)
-}),
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids: selecionados })
         });
 
@@ -1844,8 +1768,8 @@
           throw new Error("Erro ao excluir");
         }
 
-        const resultado = await resp.json();
-        alert(`✅ ${resultado.excluidos} registro(s) excluídos com sucesso`);
+        const resultado = await resp.json().catch(() => ({}));
+        alert(`✅ ${resultado.excluidos ?? selecionados.length} registro(s) excluídos com sucesso`);
 
         await carregarPagina(paginaAtual);
 
@@ -1854,7 +1778,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert("❌ Erro ao excluir registros");
+        alert("❌ Erro ao excluir registros: " + (err?.message || err));
       }
     };
 
@@ -1870,17 +1794,10 @@
         try {
           setStatus("🔄 Marcando todos os filtrados como solicitado...", "primary");
 
-          const resp = await fetch(`${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
-            method: "POST",
-            fetch(url, {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(dados)
-})
-          ;
+          const resp = await fetchAuth(
+            `${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`,
+            { method: "POST" }
+          );
 
           const data = await resp.json().catch(() => ({}));
 
@@ -1892,8 +1809,8 @@
           await carregarPagina(1);
         } catch (err) {
           console.error(err);
-          alert("❌ Erro: " + err.message);
-          setStatus("❌ Erro ao marcar filtrados: " + err.message, "danger");
+          alert("❌ Erro: " + (err?.message || err));
+          setStatus("❌ Erro ao marcar filtrados: " + (err?.message || err), "danger");
         }
 
         return;
@@ -1912,16 +1829,9 @@
       try {
         setStatus("🔄 Marcando selecionados como solicitado...", "primary");
 
-        const resp = await fetch(`${BASE_URL}/marcar-solicitado`, {
+        const resp = await fetchAuth(`${BASE_URL}/marcar-solicitado`, {
           method: "POST",
-          fetch(url, {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(dados)
-}),
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids: selecionados })
         });
 
@@ -1935,11 +1845,14 @@
         await carregarPagina(paginaAtual);
       } catch (err) {
         console.error(err);
-        alert("❌ Erro: " + err.message);
-        setStatus("❌ Erro ao marcar selecionados: " + err.message, "danger");
+        alert("❌ Erro: " + (err?.message || err));
+        setStatus("❌ Erro ao marcar selecionados: " + (err?.message || err), "danger");
       }
     };
 
+    // =========================
+    // EVENTOS
+    // =========================
     document.getElementById("bloqMatricula").addEventListener("blur", async () => {
       const valor = document.getElementById("bloqMatricula").value.trim();
 
@@ -1979,36 +1892,5 @@
       }
     });
 
-    document.addEventListener("DOMContentLoaded", async () => {
-  await validarSessao();
-  lerFiltrosDaTela();
-  await carregarPagina(1);
-});
-
     document.getElementById("selectPorPagina").addEventListener("change", async () => {
-      lerFiltrosDaTela();
-      paginaAtual = 1;
-      await carregarPagina(1);
-    });
-
-    document.getElementById("mostrarSolicitados").addEventListener("change", async () => {
-      lerFiltrosDaTela();
-      paginaAtual = 1;
-      await carregarPagina(1);
-    });
-
-    document.getElementById("filtroMatricula").addEventListener("input", async () => {
-      lerFiltrosDaTela();
-      paginaAtual = 1;
-      await carregarPagina(1);
-    });
-
-    document.getElementById("filtroNome").addEventListener("input", async () => {
-      lerFiltrosDaTela();
-      paginaAtual = 1;
-      await carregarPagina(1);
-    });
-  </script>
-   <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ab3e837119ed4133bd616d3b06ef0e25"}'></script><!-- End Cloudflare Web Analytics -->
-</body>
-</html>
+      ler
