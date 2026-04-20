@@ -1269,13 +1269,10 @@
   credentials: "include"
 })
           }),
-          fetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`, {
-            fetch(url, {
+          fetch(`${BASE_URL}/listar-bloqueios?...`, {
   method: "GET",
   credentials: "include"
-})
-          })
-        ]);
+});
 
         const lancJson = await respLanc.json().catch(() => []);
         const bloqJson = await respBloq.json().catch(() => ({}));
