@@ -845,13 +845,11 @@
   </div>
 
   <script>
-   const matriculaLogin = localStorage.getItem("matricula");
-
-if (!matriculaLogin) {
-  window.location.href = "https://coec-epb.github.io/login/";
-}
-
-document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
+    const ADMINS = [
+      "3080117", "3056107", "3001621", "10267", "10436", "9170", "11338", "3075670", "9622",
+      "3049298", "10267", "11148", "3049314", "9428", "3089287", "6156", "10349", "279091",
+      "9835", "8263", "10432", "10267", "8981", "3049298", "3075549", "8929", "3089245","6863","3097924","10559","6855","3075664","10553","8650"
+    ];
 
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
@@ -877,6 +875,18 @@ document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin
       mostrarSolicitados: false
     };
 
+    const matriculaLogin = localStorage.getItem("matricula");
+
+    if (!matriculaLogin) {
+      window.location.href = "https://coec-epb.github.io/login/";
+    }
+
+    if (!ADMINS.includes(matriculaLogin)) {
+      alert("Acesso negado!");
+      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
+    }
+
+    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
     window.logout = function () {
       localStorage.removeItem("matricula");
@@ -891,7 +901,6 @@ document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin
         .trim()
         .replace(/\s+/g, " ");
     }
-    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
     function nomePassaFiltroInteligente(nomeRegistro, termoBusca) {
       const nome = normalizarTextoBusca(nomeRegistro);
@@ -903,31 +912,6 @@ document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin
       const partesBusca = busca.split(" ").filter(Boolean);
       return partesBusca.every(parte => nome.includes(parte));
     }
-    async function validarAcesso() {
-  try {
-    const resp = await fetch(`${BASE_URL}/me`, {
-      credentials: "include"
-    });
-
-    const data = await resp.json();
-
-    if (!data.ok || data.user.role !== "admin") {
-      alert("Acesso negado!");
-      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
-      return;
-    }
-
-    document.getElementById("userInfo").innerText =
-      "Logado como: " + data.user.matricula;
-
-  } catch (err) {
-    console.error(err);
-    window.location.href = "https://coec-epb.github.io/login/";
-  }
-}
-
-// chama ao carregar
-validarAcesso();
 
     function pontuarNome(nomeRegistro, termoBusca) {
       const nome = normalizarTextoBusca(nomeRegistro);
