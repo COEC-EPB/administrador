@@ -892,6 +892,7 @@
         .trim()
         .replace(/\s+/g, " ");
     }
+    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
     function nomePassaFiltroInteligente(nomeRegistro, termoBusca) {
       const nome = normalizarTextoBusca(nomeRegistro);
