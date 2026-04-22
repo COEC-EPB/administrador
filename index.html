@@ -845,7 +845,13 @@
   </div>
 
   <script>
-   
+   const matriculaLogin = localStorage.getItem("matricula");
+
+if (!matriculaLogin) {
+  window.location.href = "https://coec-epb.github.io/login/";
+}
+
+document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
@@ -871,13 +877,6 @@
       mostrarSolicitados: false
     };
 
-
-
-    if (!matriculaLogin) {
-      window.location.href = "https://coec-epb.github.io/login/";
-    }
-
-    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
     window.logout = function () {
       localStorage.removeItem("matricula");
