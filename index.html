@@ -620,7 +620,6 @@
             <option value="falta">Falta injustificada</option>
             <option value="banco_horas">Abono / Banco de Horas</option>
             <option value="medida_disciplinar">Medida disciplinar</option>
-            <option value="medida_disciplinar">Viagem</option>
           </select>
         </div>
       </div>
@@ -845,33 +844,12 @@
   </div>
 
   <script>
+    const ADMINS = [
+      "3080117", "3056107", "3001621", "10267", "10436", "9170", "11338", "3075670", "9622",
+      "3049298", "10267", "11148", "3049314", "9428", "3089287", "6156", "10349", "279091",
+      "9835", "8263", "10432", "10267", "8981", "3049298", "3075549", "8929", "3089245","6863","3097924","10559","6855","3075664","10553","8650"
+    ];
 
-    async function apiFetch(url, options = {}) {
-  const token = localStorage.getItem("token");
-
-  const resp = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    ...options
-  });
-
-  if (resp.status === 401) {
-    alert("Sessão expirada. Faça login novamente.");
-
-    localStorage.clear();
-    window.location.href = "https://coec-epb.github.io/login/";
-    return null;
-  }
-
-  if (resp.status === 403) {
-    alert("Acesso negado. Você não é administrador.");
-    return null;
-  }
-
-  return resp;
-}
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
     let paginaAtual = 1;
@@ -896,54 +874,23 @@
       mostrarSolicitados: false
     };
 
-    async function carregarColaborador(matricula) {
-  try {
-    const resp = await apiFetch(
-      `${BASE_URL}/colaborador?matricula=${encodeURIComponent(matricula)}`
-    );
-
-    if (resp.status === 401) {
-      alert("Sessão expirada. Faça login novamente.");
-      window.location.href = "https://coec-epb.github.io/login/";
-      return;
-    }
-
-    if (!resp.ok) {
-      const t = await resp.text();
-      throw new Error(`Erro ${resp.status}: ${t}`);
-    }
-
-    const data = await resp.json();
-    console.log("Colaborador:", data);
-
-    return data;
-
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao carregar colaborador");
-  }
-}
     const matriculaLogin = localStorage.getItem("matricula");
 
     if (!matriculaLogin) {
       window.location.href = "https://coec-epb.github.io/login/";
     }
 
+    if (!ADMINS.includes(matriculaLogin)) {
+      alert("Acesso negado!");
+      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
+    }
+
     document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
-    window.logout = async function () {
-  const token = localStorage.getItem("token");
-
-  await fetch(`${BASE_URL}/logout`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  localStorage.clear();
-  window.location.href = "https://coec-epb.github.io/login/";
-};
+    window.logout = function () {
+      localStorage.removeItem("matricula");
+      window.location.href = "https://coec-epb.github.io/login/";
+    };
 
     function normalizarTextoBusca(texto) {
       return String(texto || "")
@@ -1142,93 +1089,64 @@
       resumo.innerHTML = html;
       box.classList.add("show");
     }
-  function renderCalendarioColaborador() {
-  const box = document.getElementById("calendarioColaboradorBox");
-  const grid = document.getElementById("calendarioGrid");
-  const titulo = document.getElementById("calMesAno");
 
-  if (!calendarioMatriculaAtual) {
-    box.style.display = "none";
-    return;
-  }
+    function renderCalendarioColaborador() {
+      const box = document.getElementById("calendarioColaboradorBox");
+      const grid = document.getElementById("calendarioGrid");
+      const mesAno = document.getElementById("calMesAno");
 
-  box.style.display = "block";
+      if (!calendarioMatriculaAtual) {
+        box.style.display = "none";
+        return;
+      }
 
-  const ano = calendarioDataAtual.getFullYear();
-  const mes = calendarioDataAtual.getMonth();
+      box.style.display = "block";
+      setWeekdays();
 
-  titulo.innerText = formatarMesAno(calendarioDataAtual);
+      const ano = calendarioDataAtual.getFullYear();
+      const mes = calendarioDataAtual.getMonth();
 
-  const primeiroDia = new Date(ano, mes, 1).getDay();
-  const totalDias = new Date(ano, mes + 1, 0).getDate();
+      mesAno.innerText = formatarMesAno(calendarioDataAtual);
+      grid.innerHTML = "";
 
-  let html = "";
+      const primeiroDia = new Date(ano, mes, 1).getDay();
+      const totalDias = new Date(ano, mes + 1, 0).getDate();
 
-  // espaços vazios antes do mês começar
-  for (let i = 0; i < primeiroDia; i++) {
-    html += `<div class="cal-dia-vazio"></div>`;
-  }
+      for (let i = 0; i < primeiroDia; i++) {
+        const vazio = document.createElement("div");
+        vazio.className = "cal-dia-vazio";
+        grid.appendChild(vazio);
+      }
 
-  for (let dia = 1; dia <= totalDias; dia++) {
-    const dataISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+      for (let dia = 1; dia <= totalDias; dia++) {
+        const dataISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+        const lancamentos = getLancamentosDoDia(dataISO);
+        const bloqueio = getBloqueioDoDia(dataISO);
 
-    const lancamentos = getLancamentosDoDia(dataISO);
-    const bloqueio = getBloqueioDoDia(dataISO);
+        let classe = "cal-dia normal";
+        if (lancamentos.length > 0 && bloqueio) {
+          classe = "cal-dia add-bloqueado";
+        } else if (bloqueio) {
+          classe = "cal-dia bloqueado";
+        } else if (lancamentos.length > 0) {
+          classe = "cal-dia add";
+        }
 
-    let classe = "normal";
+        if (diaSelecionado === dataISO) {
+          classe += " selecionado";
+        }
 
-    if (lancamentos.length && bloqueio) classe = "add-bloqueado";
-    else if (lancamentos.length) classe = "add";
-    else if (bloqueio) classe = "bloqueado";
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = classe;
+        btn.textContent = dia;
+        btn.onclick = () => selecionarDiaCalendario(dataISO);
 
-    const selecionado = dataISO === diaSelecionado ? "selecionado" : "";
+        grid.appendChild(btn);
+      }
 
-    html += `
-      <button 
-        class="cal-dia ${classe} ${selecionado}"
-        onclick="selecionarDiaCalendario('${dataISO}')"
-      >
-        ${dia}
-      </button>
-    `;
-  }
-
-  grid.innerHTML = html;
-
-  atualizarResumoDiaSelecionado();
-}
-    window.carregarCalendarioColaborador = async function () {
-  const matricula = document.getElementById("bloqMatricula").value.trim();
-
-  if (!matricula) {
-    alert("Informe a matrícula do colaborador.");
-    return;
-  }
-
-  try {
-    setStatus("🔄 Carregando calendário...", "primary");
-
-    calendarioMatriculaAtual = matricula;
-
-    const [respLanc, respBloq] = await Promise.all([
-      apiFetch(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`),
-      apiFetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
-    ]);
-
-    const lancJson = await respLanc.json().catch(() => []);
-    const bloqJson = await respBloq.json().catch(() => ({}));
-
-    calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
-    calendarioBloqueios = bloqJson.items || [];
-
-    renderCalendarioColaborador();
-    setStatus("✅ Calendário carregado.", "success");
-
-  } catch (err) {
-    console.error(err);
-    setStatus("❌ Erro: " + err.message, "danger");
-  }
-};
+      atualizarResumoDiaSelecionado();
+    }
 
     window.selecionarDiaCalendario = function (dataISO) {
       diaSelecionado = dataISO;
@@ -1317,43 +1235,116 @@
       }
     };
 
-  
+    window.carregarCalendarioColaborador = async function () {
+      const matricula = document.getElementById("bloqMatricula").value.trim();
+
+      if (!matricula) {
+        alert("Informe a matrícula do colaborador.");
+        return;
+      }
+
+      try {
+        setStatus("🔄 Carregando calendário do colaborador...", "primary");
+
+        calendarioMatriculaAtual = matricula;
+
+        const [respLanc, respBloq] = await Promise.all([
+          fetch(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`, {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
+          }),
+          fetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`, {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
+          })
+        ]);
+
+        const lancJson = await respLanc.json().catch(() => []);
+        const bloqJson = await respBloq.json().catch(() => ({}));
+
+        calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
+        calendarioBloqueios = bloqJson.items || [];
+
+        const dataCampo = document.getElementById("bloqDataInicio").value.trim();
+        if (dataCampo) {
+          diaSelecionado = dataCampo;
+          const partes = dataCampo.split("-");
+          if (partes.length === 3) {
+            calendarioDataAtual = new Date(Number(partes[0]), Number(partes[1]) - 1, 1);
+          }
+        } else if (calendarioLancamentos.length > 0) {
+          const ref = String(calendarioLancamentos[0].datauso || "");
+          if (/^\d{4}-\d{2}-\d{2}$/.test(ref)) {
+            const [a, m] = ref.split("-");
+            calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
+          }
+        } else if (calendarioBloqueios.length > 0) {
+          const ref = String(calendarioBloqueios[0].datauso || "");
+          if (/^\d{4}-\d{2}-\d{2}$/.test(ref)) {
+            const [a, m] = ref.split("-");
+            calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
+          }
+        }
+
+        renderCalendarioColaborador();
+        setStatus("✅ Calendário carregado.", "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("❌ Erro ao carregar calendário: " + err.message, "danger");
+      }
+    };
 
     window.bloquearPeriodo = async function () {
-  const matricula = document.getElementById("bloqMatricula").value.trim();
-  const dataInicio = document.getElementById("bloqDataInicio").value.trim();
-  const dataFim = document.getElementById("bloqDataFim").value.trim();
-  const justificativa = document.getElementById("bloqJustificativa").value.trim();
+      const matricula = document.getElementById("bloqMatricula").value.trim();
+      const dataInicio = document.getElementById("bloqDataInicio").value.trim();
+      const dataFim = document.getElementById("bloqDataFim").value.trim();
+      const justificativa = document.getElementById("bloqJustificativa").value.trim();
 
-  if (!matricula || !dataInicio || !dataFim || !justificativa) {
-    alert("Preencha todos os campos.");
-    return;
-  }
+      if (!matricula || !dataInicio || !dataFim || !justificativa) {
+        alert("Preencha matrícula, data início, data fim e justificativa.");
+        return;
+      }
 
-  try {
-    const resp = await apiFetch(`${BASE_URL}/bloquear-periodo`, {
-      method: "POST",
-      body: JSON.stringify({
-        matricula,
-        dataInicio,
-        dataFim,
-        justificativa
-      })
-    });
+      if (dataFim < dataInicio) {
+        alert("A data fim não pode ser menor que a data início.");
+        return;
+      }
 
-    const json = await resp.json();
+      try {
+        setStatus("🔄 Bloqueando período...", "primary");
 
-    if (!resp.ok || json.ok === false) {
-      throw new Error(json.error);
-    }
+        const resp = await fetch(`${BASE_URL}/bloquear-periodo`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula") || ""
+          },
+          body: JSON.stringify({
+            matricula,
+            dataInicio,
+            dataFim,
+            justificativa
+          })
+        });
 
-    alert("✅ Bloqueado com sucesso");
-    await carregarCalendarioColaborador();
+        const json = await resp.json().catch(() => ({}));
 
-  } catch (err) {
-    alert("❌ " + err.message);
-  }
-};
+        if (!resp.ok || json.ok === false) {
+          throw new Error(json.error || "Erro ao bloquear período.");
+        }
+
+        alert(`✅ Período bloqueado com sucesso. ${json.totalBloqueados ?? 0} dia(s) afetado(s).`);
+        setStatus("✅ Bloqueio realizado com sucesso.", "success");
+        await carregarCalendarioColaborador();
+        await carregarBloqueiosAtivos();
+      } catch (err) {
+        console.error(err);
+        alert("❌ " + err.message);
+        setStatus("❌ Erro ao bloquear período: " + err.message, "danger");
+      }
+    };
 
     window.desbloquearPeriodo = async function () {
       const matricula = document.getElementById("bloqMatricula").value.trim();
@@ -1378,14 +1369,18 @@
       try {
         setStatus("🔄 Desbloqueando período...", "primary");
 
-        const resp = await apiFetch(`${BASE_URL}/desbloquear-periodo`, {
-  method: "POST",
-  body: JSON.stringify({
-    matricula,
-    dataInicio,
-    dataFim
-  })
-});
+        const resp = await fetch(`${BASE_URL}/desbloquear-periodo`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula") || ""
+          },
+          body: JSON.stringify({
+            matricula,
+            dataInicio,
+            dataFim
+          })
+        });
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1430,10 +1425,14 @@
 
         const ids = lancamentos.map(x => x.id).filter(Boolean);
 
-        const resp = await apiFetch(`${BASE_URL}/excluir`, {
-  method: "POST",
-  body: JSON.stringify({ ids })
-});
+        const resp = await fetch(`${BASE_URL}/excluir`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula")
+          },
+          body: JSON.stringify({ ids })
+        });
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1480,9 +1479,14 @@
       `;
 
       try {
-        const resp = await apiFetch(
-  `${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`
-);
+        const resp = await fetch(
+          `${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`,
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula") || ""
+            }
+          }
+        );
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1594,58 +1598,46 @@
     });
 
     async function carregarPagina(page) {
-  const btnFiltrar = document.getElementById("btnFiltrar");
-  btnFiltrar.disabled = true;
+      const btnFiltrar = document.getElementById("btnFiltrar");
+      btnFiltrar.disabled = true;
 
-  try {
-    setStatus("🔄 Carregando dados...", "primary");
+      try {
+        setStatus("🔄 Carregando dados...", "primary");
 
-const resp = await apiFetch(
-  `${BASE_URL}/buscar-todos?${montarQS(page)}`
-);
+        const resp = await fetch(
+          `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
+          }
+        );
 
-    if (resp.status === 401) {
-      // 🔐 Sessão expirou ou não autenticado
-      setStatus("⚠️ Sessão expirada. Faça login novamente.", "danger");
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${t}`);
+        }
 
-      setTimeout(() => {
-        window.location.href = "https://coec-epb.github.io/login/";
-      }, 1500);
+        const payload = await resp.json();
 
-      return;
+        let itens = payload.items || [];
+
+        dadosFiltrados = itens;
+        paginaAtual = Number(payload.page || page);
+        totalPages = Number(payload.totalPages || 1);
+        totalItems = Number(payload.totalItems || itens.length);
+
+        preencherTabela(dadosFiltrados);
+        atualizarUIpaginacao();
+
+        setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
+      } finally {
+        btnFiltrar.disabled = false;
+      }
     }
-
-    if (resp.status === 403) {
-      setStatus("⛔ Acesso negado (não é admin).", "danger");
-      return;
-    }
-
-    if (!resp.ok) {
-      const t = await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${t}`);
-    }
-
-    const payload = await resp.json();
-
-    let itens = payload.items || [];
-
-    dadosFiltrados = itens;
-    paginaAtual = Number(payload.page || page);
-    totalPages = Number(payload.totalPages || 1);
-    totalItems = Number(payload.totalItems || itens.length);
-
-    preencherTabela(dadosFiltrados);
-    atualizarUIpaginacao();
-
-    setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
-
-  } catch (err) {
-    console.error(err);
-    setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
-  } finally {
-    btnFiltrar.disabled = false;
-  }
-}
 
     window.aplicarFiltros = async function () {
       const btn = document.getElementById("btnFiltrar");
@@ -1741,9 +1733,14 @@ const resp = await apiFetch(
       try {
         setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        const resp1 = await apiFetch(
-  `${BASE_URL}/buscar-todos?${montarQS(1)}`
-);
+        const resp1 = await fetch(
+          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
+          {
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
+          }
+        );
 
         if (!resp1.ok) {
           throw new Error("Falha ao iniciar exportação");
@@ -1756,9 +1753,14 @@ const resp = await apiFetch(
         setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
 
         for (let page = 2; page <= tp; page++) {
-          const resp = await apiFetch(
-  `${BASE_URL}/buscar-todos?${montarQS(page)}`
-);
+          const resp = await fetch(
+            `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+            {
+              headers: {
+                "X-MATRICULA": localStorage.getItem("matricula")
+              }
+            }
+          );
 
           if (!resp.ok) {
             throw new Error(`Falha ao buscar página ${page}`);
@@ -1804,10 +1806,14 @@ const resp = await apiFetch(
       if (!confirmar) return;
 
       try {
-        const resp = await apiFetch(`${BASE_URL}/excluir`, {
-  method: "POST",
-  body: JSON.stringify({ ids: selecionados })
-});
+        const resp = await fetch(`${BASE_URL}/excluir`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula")
+          },
+          body: JSON.stringify({ ids: selecionados })
+        });
 
         if (!resp.ok) {
           throw new Error("Erro ao excluir");
@@ -1839,10 +1845,12 @@ const resp = await apiFetch(
         try {
           setStatus("🔄 Marcando todos os filtrados como solicitado...", "primary");
 
-          const resp = await apiFetch(`${BASE_URL}/marcar-solicitado`, {
-  method: "POST",
-  body: JSON.stringify({ todosFiltrados: true })
-});
+          const resp = await fetch(`${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
+            method: "POST",
+            headers: {
+              "X-MATRICULA": localStorage.getItem("matricula")
+            }
+          });
 
           const data = await resp.json().catch(() => ({}));
 
@@ -1874,10 +1882,14 @@ const resp = await apiFetch(
       try {
         setStatus("🔄 Marcando selecionados como solicitado...", "primary");
 
-const resp = await apiFetch(`${BASE_URL}/marcar-solicitado`, {
-  method: "POST",
-  body: JSON.stringify({ ids: selecionados })
-});
+        const resp = await fetch(`${BASE_URL}/marcar-solicitado`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-MATRICULA": localStorage.getItem("matricula")
+          },
+          body: JSON.stringify({ ids: selecionados })
+        });
 
         const data = await resp.json().catch(() => ({}));
 
