@@ -887,6 +887,33 @@
       mostrarSolicitados: false
     };
 
+    async function carregarColaborador(matricula) {
+  try {
+    const resp = await apiFetch(
+      `${BASE_URL}/colaborador?matricula=${encodeURIComponent(matricula)}`
+    );
+
+    if (resp.status === 401) {
+      alert("Sessão expirada. Faça login novamente.");
+      window.location.href = "https://coec-epb.github.io/login/";
+      return;
+    }
+
+    if (!resp.ok) {
+      const t = await resp.text();
+      throw new Error(`Erro ${resp.status}: ${t}`);
+    }
+
+    const data = await resp.json();
+    console.log("Colaborador:", data);
+
+    return data;
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao carregar colaborador");
+  }
+}
     const matriculaLogin = localStorage.getItem("matricula");
 
     if (!matriculaLogin) {
