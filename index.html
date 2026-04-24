@@ -1118,7 +1118,61 @@
       resumo.innerHTML = html;
       box.classList.add("show");
     }
+  function renderCalendarioColaborador() {
+  const box = document.getElementById("calendarioColaboradorBox");
+  const grid = document.getElementById("calendarioGrid");
+  const titulo = document.getElementById("calMesAno");
 
+  if (!calendarioMatriculaAtual) {
+    box.style.display = "none";
+    return;
+  }
+
+  box.style.display = "block";
+
+  const ano = calendarioDataAtual.getFullYear();
+  const mes = calendarioDataAtual.getMonth();
+
+  titulo.innerText = formatarMesAno(calendarioDataAtual);
+
+  const primeiroDia = new Date(ano, mes, 1).getDay();
+  const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+  let html = "";
+
+  // espaços vazios antes do mês começar
+  for (let i = 0; i < primeiroDia; i++) {
+    html += `<div class="cal-dia-vazio"></div>`;
+  }
+
+  for (let dia = 1; dia <= totalDias; dia++) {
+    const dataISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+
+    const lancamentos = getLancamentosDoDia(dataISO);
+    const bloqueio = getBloqueioDoDia(dataISO);
+
+    let classe = "normal";
+
+    if (lancamentos.length && bloqueio) classe = "add-bloqueado";
+    else if (lancamentos.length) classe = "add";
+    else if (bloqueio) classe = "bloqueado";
+
+    const selecionado = dataISO === diaSelecionado ? "selecionado" : "";
+
+    html += `
+      <button 
+        class="cal-dia ${classe} ${selecionado}"
+        onclick="selecionarDiaCalendario('${dataISO}')"
+      >
+        ${dia}
+      </button>
+    `;
+  }
+
+  grid.innerHTML = html;
+
+  atualizarResumoDiaSelecionado();
+}
     window.carregarCalendarioColaborador = async function () {
   const matricula = document.getElementById("bloqMatricula").value.trim();
 
