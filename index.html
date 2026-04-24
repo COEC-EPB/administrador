@@ -1313,9 +1313,9 @@
 
         const resp = await fetch(`${BASE_URL}/desbloquear-periodo`, {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            credentials: "include",
             "X-MATRICULA": localStorage.getItem("matricula") || ""
           },
           body: JSON.stringify({
@@ -1370,9 +1370,10 @@
 
         const resp = await fetch(`${BASE_URL}/excluir`, {
           method: "POST",
+           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            credentials: "include",
+           
             "X-MATRICULA": localStorage.getItem("matricula")
           },
           body: JSON.stringify({ ids })
@@ -1426,8 +1427,8 @@
         const resp = await fetch(
           `${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`,
           {
+            credentials: "include",
             headers: {
-              credentials: "include",
               "X-MATRICULA": localStorage.getItem("matricula") || ""
             }
           }
@@ -1701,8 +1702,8 @@
         const resp1 = await fetch(
           `${BASE_URL}/buscar-todos?${montarQS(1)}`,
           {
+            credentials: "include",
             headers: {
-              credentials: "include",
               "X-MATRICULA": localStorage.getItem("matricula")
             }
           }
@@ -1722,8 +1723,8 @@
           const resp = await fetch(
             `${BASE_URL}/buscar-todos?${montarQS(page)}`,
             {
+             credentials: "include",
               headers: {
-                credentials: "include",
                 "X-MATRICULA": localStorage.getItem("matricula")
               }
             }
@@ -1775,8 +1776,9 @@
       try {
         const resp = await fetch(`${BASE_URL}/excluir`, {
           method: "POST",
+                      credentials: "include",
           headers: {
-            credentials: "include",
+
             "Content-Type": "application/json",
             "X-MATRICULA": localStorage.getItem("matricula")
           },
@@ -1815,8 +1817,9 @@
 
           const resp = await fetch(`${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
             method: "POST",
+                   credentials: "include",
             headers: {
-              credentials: "include",
+       
               "X-MATRICULA": localStorage.getItem("matricula")
             }
           });
@@ -1853,8 +1856,9 @@
 
         const resp = await fetch(`${BASE_URL}/marcar-solicitado`, {
           method: "POST",
+          credentials: "include",
           headers: {
-            credentials: "include",
+            
             "Content-Type": "application/json",
             "X-MATRICULA": localStorage.getItem("matricula")
           },
