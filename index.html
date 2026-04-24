@@ -914,11 +914,6 @@
       window.location.href = "https://coec-epb.github.io/login/";
     }
 
-    if (!ADMINS.includes(matriculaLogin)) {
-      alert("Acesso negado!");
-      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
-    }
-
     document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
     window.logout = function () {
@@ -1774,7 +1769,7 @@ const resp = await apiFetch(
 
           const resp = await apiFetch(`${BASE_URL}/marcar-solicitado`, {
   method: "POST",
-  body: JSON.stringify({ ids: selecionados })
+  body: JSON.stringify({ todosFiltrados: true })
 });
 
           const data = await resp.json().catch(() => ({}));
