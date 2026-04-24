@@ -845,6 +845,18 @@
   </div>
 
   <script>
+
+    function apiFetch(url, options = {}) {
+  return fetch(url, {
+    credentials: "include", // 🔥 envia cookie de sessão
+    headers: {
+      "Content-Type": "application/json",
+      "X-MATRICULA": localStorage.getItem("matricula") || "",
+      ...(options.headers || {})
+    },
+    ...options
+  });
+}
     const ADMINS = [
       "3080117", "3056107", "3001621", "10267", "10436", "9170", "11338", "3075670", "9622",
       "3049298", "10267", "11148", "3049314", "9428", "3089287", "6156", "10349", "279091",
@@ -1091,63 +1103,38 @@
       box.classList.add("show");
     }
 
-    function renderCalendarioColaborador() {
-      const box = document.getElementById("calendarioColaboradorBox");
-      const grid = document.getElementById("calendarioGrid");
-      const mesAno = document.getElementById("calMesAno");
+    window.carregarCalendarioColaborador = async function () {
+  const matricula = document.getElementById("bloqMatricula").value.trim();
 
-      if (!calendarioMatriculaAtual) {
-        box.style.display = "none";
-        return;
-      }
+  if (!matricula) {
+    alert("Informe a matrícula do colaborador.");
+    return;
+  }
 
-      box.style.display = "block";
-      setWeekdays();
+  try {
+    setStatus("🔄 Carregando calendário...", "primary");
 
-      const ano = calendarioDataAtual.getFullYear();
-      const mes = calendarioDataAtual.getMonth();
+    calendarioMatriculaAtual = matricula;
 
-      mesAno.innerText = formatarMesAno(calendarioDataAtual);
-      grid.innerHTML = "";
+    const [respLanc, respBloq] = await Promise.all([
+      apiFetch(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`),
+      apiFetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
+    ]);
 
-      const primeiroDia = new Date(ano, mes, 1).getDay();
-      const totalDias = new Date(ano, mes + 1, 0).getDate();
+    const lancJson = await respLanc.json().catch(() => []);
+    const bloqJson = await respBloq.json().catch(() => ({}));
 
-      for (let i = 0; i < primeiroDia; i++) {
-        const vazio = document.createElement("div");
-        vazio.className = "cal-dia-vazio";
-        grid.appendChild(vazio);
-      }
+    calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
+    calendarioBloqueios = bloqJson.items || [];
 
-      for (let dia = 1; dia <= totalDias; dia++) {
-        const dataISO = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-        const lancamentos = getLancamentosDoDia(dataISO);
-        const bloqueio = getBloqueioDoDia(dataISO);
+    renderCalendarioColaborador();
+    setStatus("✅ Calendário carregado.", "success");
 
-        let classe = "cal-dia normal";
-        if (lancamentos.length > 0 && bloqueio) {
-          classe = "cal-dia add-bloqueado";
-        } else if (bloqueio) {
-          classe = "cal-dia bloqueado";
-        } else if (lancamentos.length > 0) {
-          classe = "cal-dia add";
-        }
-
-        if (diaSelecionado === dataISO) {
-          classe += " selecionado";
-        }
-
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = classe;
-        btn.textContent = dia;
-        btn.onclick = () => selecionarDiaCalendario(dataISO);
-
-        grid.appendChild(btn);
-      }
-
-      atualizarResumoDiaSelecionado();
-    }
+  } catch (err) {
+    console.error(err);
+    setStatus("❌ Erro: " + err.message, "danger");
+  }
+};
 
     window.selecionarDiaCalendario = function (dataISO) {
       diaSelecionado = dataISO;
@@ -1300,55 +1287,40 @@
     };
 
     window.bloquearPeriodo = async function () {
-      const matricula = document.getElementById("bloqMatricula").value.trim();
-      const dataInicio = document.getElementById("bloqDataInicio").value.trim();
-      const dataFim = document.getElementById("bloqDataFim").value.trim();
-      const justificativa = document.getElementById("bloqJustificativa").value.trim();
+  const matricula = document.getElementById("bloqMatricula").value.trim();
+  const dataInicio = document.getElementById("bloqDataInicio").value.trim();
+  const dataFim = document.getElementById("bloqDataFim").value.trim();
+  const justificativa = document.getElementById("bloqJustificativa").value.trim();
 
-      if (!matricula || !dataInicio || !dataFim || !justificativa) {
-        alert("Preencha matrícula, data início, data fim e justificativa.");
-        return;
-      }
+  if (!matricula || !dataInicio || !dataFim || !justificativa) {
+    alert("Preencha todos os campos.");
+    return;
+  }
 
-      if (dataFim < dataInicio) {
-        alert("A data fim não pode ser menor que a data início.");
-        return;
-      }
+  try {
+    const resp = await apiFetch(`${BASE_URL}/bloquear-periodo`, {
+      method: "POST",
+      body: JSON.stringify({
+        matricula,
+        dataInicio,
+        dataFim,
+        justificativa
+      })
+    });
 
-      try {
-        setStatus("🔄 Bloqueando período...", "primary");
+    const json = await resp.json();
 
-        const resp = await fetch(`${BASE_URL}/bloquear-periodo`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            credentials: "include",
-            "X-MATRICULA": localStorage.getItem("matricula") || ""
-          },
-          body: JSON.stringify({
-            matricula,
-            dataInicio,
-            dataFim,
-            justificativa
-          })
-        });
+    if (!resp.ok || json.ok === false) {
+      throw new Error(json.error);
+    }
 
-        const json = await resp.json().catch(() => ({}));
+    alert("✅ Bloqueado com sucesso");
+    await carregarCalendarioColaborador();
 
-        if (!resp.ok || json.ok === false) {
-          throw new Error(json.error || "Erro ao bloquear período.");
-        }
-
-        alert(`✅ Período bloqueado com sucesso. ${json.totalBloqueados ?? 0} dia(s) afetado(s).`);
-        setStatus("✅ Bloqueio realizado com sucesso.", "success");
-        await carregarCalendarioColaborador();
-        await carregarBloqueiosAtivos();
-      } catch (err) {
-        console.error(err);
-        alert("❌ " + err.message);
-        setStatus("❌ Erro ao bloquear período: " + err.message, "danger");
-      }
-    };
+  } catch (err) {
+    alert("❌ " + err.message);
+  }
+};
 
     window.desbloquearPeriodo = async function () {
       const matricula = document.getElementById("bloqMatricula").value.trim();
