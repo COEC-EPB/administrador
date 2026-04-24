@@ -846,16 +846,31 @@
 
   <script>
 
-    function apiFetch(url, options = {}) {
-  return fetch(url, {
-    credentials: "include", // 🔥 envia cookie de sessão
+    async function apiFetch(url, options = {}) {
+  const token = localStorage.getItem("token");
+
+  const resp = await fetch(url, {
     headers: {
       "Content-Type": "application/json",
-      "X-MATRICULA": localStorage.getItem("matricula") || "",
-      ...(options.headers || {})
+      "Authorization": `Bearer ${token}`
     },
     ...options
   });
+
+  if (resp.status === 401) {
+    alert("Sessão expirada. Faça login novamente.");
+
+    localStorage.clear();
+    window.location.href = "https://coec-epb.github.io/login/";
+    return null;
+  }
+
+  if (resp.status === 403) {
+    alert("Acesso negado. Você não é administrador.");
+    return null;
+  }
+
+  return resp;
 }
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
@@ -916,10 +931,19 @@
 
     document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
 
-    window.logout = function () {
-      localStorage.removeItem("matricula");
-      window.location.href = "https://coec-epb.github.io/login/";
-    };
+    window.logout = async function () {
+  const token = localStorage.getItem("token");
+
+  await fetch(`${BASE_URL}/logout`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  localStorage.clear();
+  window.location.href = "https://coec-epb.github.io/login/";
+};
 
     function normalizarTextoBusca(texto) {
       return String(texto || "")
@@ -1717,15 +1741,9 @@ const resp = await apiFetch(
       try {
         setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        const resp1 = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
-          {
-            credentials: "include",
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula")
-            }
-          }
-        );
+        const resp1 = await apiFetch(
+  `${BASE_URL}/buscar-todos?${montarQS(1)}`
+);
 
         if (!resp1.ok) {
           throw new Error("Falha ao iniciar exportação");
