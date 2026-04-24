@@ -1605,47 +1605,66 @@
     });
 
     async function carregarPagina(page) {
-      const btnFiltrar = document.getElementById("btnFiltrar");
-      btnFiltrar.disabled = true;
+  const btnFiltrar = document.getElementById("btnFiltrar");
+  btnFiltrar.disabled = true;
 
-      try {
-        setStatus("🔄 Carregando dados...", "primary");
+  try {
+    setStatus("🔄 Carregando dados...", "primary");
 
-        const resp = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-          {
-            headers: {
-              credentials: "include",
-              "X-MATRICULA": localStorage.getItem("matricula")
-            }
-          }
-        );
-
-        if (!resp.ok) {
-          const t = await resp.text();
-          throw new Error(`HTTP ${resp.status}: ${t}`);
+    const resp = await fetch(
+      `${BASE_URL}/buscar-todos?${montarQS(page)}`,
+      {
+        method: "GET",
+        credentials: "include", // 🔥 ESSENCIAL (envia o cookie de sessão)
+        headers: {
+          "Content-Type": "application/json",
+          "X-MATRICULA": localStorage.getItem("matricula") || ""
         }
-
-        const payload = await resp.json();
-
-        let itens = payload.items || [];
-
-        dadosFiltrados = itens;
-        paginaAtual = Number(payload.page || page);
-        totalPages = Number(payload.totalPages || 1);
-        totalItems = Number(payload.totalItems || itens.length);
-
-        preencherTabela(dadosFiltrados);
-        atualizarUIpaginacao();
-
-        setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
-      } catch (err) {
-        console.error(err);
-        setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
-      } finally {
-        btnFiltrar.disabled = false;
       }
+    );
+
+    if (resp.status === 401) {
+      // 🔐 Sessão expirou ou não autenticado
+      setStatus("⚠️ Sessão expirada. Faça login novamente.", "danger");
+
+      setTimeout(() => {
+        window.location.href = "https://coec-epb.github.io/login/";
+      }, 1500);
+
+      return;
     }
+
+    if (resp.status === 403) {
+      setStatus("⛔ Acesso negado (não é admin).", "danger");
+      return;
+    }
+
+    if (!resp.ok) {
+      const t = await resp.text();
+      throw new Error(`HTTP ${resp.status}: ${t}`);
+    }
+
+    const payload = await resp.json();
+
+    let itens = payload.items || [];
+
+    dadosFiltrados = itens;
+    paginaAtual = Number(payload.page || page);
+    totalPages = Number(payload.totalPages || 1);
+    totalItems = Number(payload.totalItems || itens.length);
+
+    preencherTabela(dadosFiltrados);
+    atualizarUIpaginacao();
+
+    setStatus(`✅ ${dadosFiltrados.length} registro(s) carregados na página`, "success");
+
+  } catch (err) {
+    console.error(err);
+    setStatus("❌ Erro ao carregar dados: " + err.message, "danger");
+  } finally {
+    btnFiltrar.disabled = false;
+  }
+}
 
     window.aplicarFiltros = async function () {
       const btn = document.getElementById("btnFiltrar");
