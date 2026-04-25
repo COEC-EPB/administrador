@@ -845,12 +845,15 @@
   </div>
   <script src="https://coec-epb.github.io/login/auth.js"></script>
   <script>
-    const ADMINS = [
-      "3080117", "3056107", "3001621", "10267", "10436", "9170", "11338", "3075670", "9622",
-      "3049298", "10267", "11148", "3049314", "9428", "3089287", "6156", "10349", "279091",
-      "9835", "8263", "10432", "10267", "8981", "3049298", "3075549", "8929", "3089245","6863","3097924","10559","6855","3075664","10553","8650"
-    ];
+    if (!isLogged()) {
+  logout();
+}
 
+const user = getUser();
+
+if (!user || !user.matricula) {
+  logout();
+}
     const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
     let paginaAtual = 1;
@@ -875,19 +878,16 @@
       mostrarSolicitados: false
     };
 
-    const matriculaLogin = localStorage.getItem("matricula");
-
     if (!matriculaLogin) {
       window.location.href = "https://coec-epb.github.io/login/";
     }
 
     if (!ADMINS.includes(matriculaLogin)) {
       alert("Acesso negado!");
-      window.location.href = "https://coec-epb.github.io/prestacao_de_contas/";
+      window.location.href = "https://coec-epb.github.io/ADD/";
     }
 
-    document.getElementById("userInfo").innerText = "Logado como: " + matriculaLogin;
-
+    document.getElementById("userInfo").innerText = "Logado como: " + user.matricula;
     window.logout = function () {
       localStorage.removeItem("matricula");
       window.location.href = "https://coec-epb.github.io/login/";
@@ -1250,17 +1250,9 @@
         calendarioMatriculaAtual = matricula;
 
         const [respLanc, respBloq] = await Promise.all([
-          fetch(`${BASE_URL}/buscar?matricula=${encodeURIComponent(matricula)}`, {
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula") || ""
-            }
-          }),
-          fetch(`${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`, {
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula") || ""
-            }
-          })
-        ]);
+  authFetch(`${API}/buscar?${montarQS(page)}`),
+  authFetch(`${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
+]);
 
         const lancJson = await respLanc.json().catch(() => []);
         const bloqJson = await respBloq.json().catch(() => ({}));
@@ -1316,19 +1308,18 @@
       try {
         setStatus("🔄 Bloqueando período...", "primary");
 
-        const resp = await fetch(`${BASE_URL}/bloquear-periodo`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula") || ""
-          },
-          body: JSON.stringify({
-            matricula,
-            dataInicio,
-            dataFim,
-            justificativa
-          })
-        });
+        const resp = await authFetch(`${API}/bloquear-periodo`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    matricula,
+    dataInicio,
+    dataFim,
+    justificativa
+  })
+});
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1346,7 +1337,12 @@
         setStatus("❌ Erro ao bloquear período: " + err.message, "danger");
       }
     };
-
+  if (auth.user.role !== "admin") {
+  return new Response(JSON.stringify({
+    ok: false,
+    error: "Acesso negado"
+  }), { status: 403, headers: corsHeaders });
+}
     window.desbloquearPeriodo = async function () {
       const matricula = document.getElementById("bloqMatricula").value.trim();
       const dataInicio = document.getElementById("bloqDataInicio").value.trim();
@@ -1370,18 +1366,17 @@
       try {
         setStatus("🔄 Desbloqueando período...", "primary");
 
-        const resp = await fetch(`${BASE_URL}/desbloquear-periodo`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula") || ""
-          },
-          body: JSON.stringify({
-            matricula,
-            dataInicio,
-            dataFim
-          })
-        });
+        const resp = await authFetch(`${API}/desbloquear-periodo`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    matricula,
+    dataInicio,
+    dataFim
+  })
+});
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1426,14 +1421,13 @@
 
         const ids = lancamentos.map(x => x.id).filter(Boolean);
 
-        const resp = await fetch(`${BASE_URL}/excluir`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula")
-          },
-          body: JSON.stringify({ ids })
-        });
+        const resp = await authFetch(`${API}/excluir`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ ids })
+});
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1480,14 +1474,9 @@
       `;
 
       try {
-        const resp = await fetch(
-          `${BASE_URL}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`,
-          {
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula") || ""
-            }
-          }
-        );
+        const resp = await authFetch(
+  `${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`
+);
 
         const json = await resp.json().catch(() => ({}));
 
@@ -1605,14 +1594,7 @@
       try {
         setStatus("🔄 Carregando dados...", "primary");
 
-        const resp = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-          {
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula")
-            }
-          }
-        );
+        const resp = authFetch(`${API}/buscar-todos?${montarQS(page)}`);
 
         if (!resp.ok) {
           const t = await resp.text();
@@ -1734,14 +1716,7 @@
       try {
         setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        const resp1 = await fetch(
-          `${BASE_URL}/buscar-todos?${montarQS(1)}`,
-          {
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula")
-            }
-          }
-        );
+        const resp1 = authFetch(`${API}/buscar-todos?${montarQS(page)}`);
 
         if (!resp1.ok) {
           throw new Error("Falha ao iniciar exportação");
@@ -1754,14 +1729,7 @@
         setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
 
         for (let page = 2; page <= tp; page++) {
-          const resp = await fetch(
-            `${BASE_URL}/buscar-todos?${montarQS(page)}`,
-            {
-              headers: {
-                "X-MATRICULA": localStorage.getItem("matricula")
-              }
-            }
-          );
+          const resp = authFetch(`${API}/buscar-todos?${montarQS(page)}`);
 
           if (!resp.ok) {
             throw new Error(`Falha ao buscar página ${page}`);
@@ -1807,14 +1775,13 @@
       if (!confirmar) return;
 
       try {
-        const resp = await fetch(`${BASE_URL}/excluir`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula")
-          },
-          body: JSON.stringify({ ids: selecionados })
-        });
+        const resp = await authFetch(`${API}/excluir`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ ids: selecionados })
+});
 
         if (!resp.ok) {
           throw new Error("Erro ao excluir");
@@ -1846,12 +1813,9 @@
         try {
           setStatus("🔄 Marcando todos os filtrados como solicitado...", "primary");
 
-          const resp = await fetch(`${BASE_URL}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
-            method: "POST",
-            headers: {
-              "X-MATRICULA": localStorage.getItem("matricula")
-            }
-          });
+          const resp = await authFetch(`${API}/marcar-solicitado-filtro?${montarQS(1, true)}`, {
+  method: "POST"
+});
 
           const data = await resp.json().catch(() => ({}));
 
@@ -1883,14 +1847,13 @@
       try {
         setStatus("🔄 Marcando selecionados como solicitado...", "primary");
 
-        const resp = await fetch(`${BASE_URL}/marcar-solicitado`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-MATRICULA": localStorage.getItem("matricula")
-          },
-          body: JSON.stringify({ ids: selecionados })
-        });
+        const resp = await authFetch(`${API}/marcar-solicitado`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ ids: selecionados })
+});
 
         const data = await resp.json().catch(() => ({}));
 
