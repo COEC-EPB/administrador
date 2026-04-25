@@ -1250,61 +1250,41 @@ if (!user || !user.matricula) {
     };
 
     window.carregarCalendarioColaborador = async function () {
-      const matricula = document.getElementById("bloqMatricula").value.trim();
+  const matricula = document.getElementById("bloqMatricula").value.trim();
 
-      if (!matricula) {
-        alert("Informe a matrícula do colaborador.");
-        return;
-      }
+  if (!matricula) {
+    alert("Informe a matrícula do colaborador.");
+    return;
+  }
 
-      try {
-        setStatus("🔄 Carregando calendário do colaborador...", "primary");
+  try {
+    setStatus("🔄 Carregando calendário do colaborador...", "primary");
 
-        calendarioMatriculaAtual = matricula;
+    calendarioMatriculaAtual = matricula;
 
-        const hoje = calendarioDataAtual;
-        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-        const ano = hoje.getFullYear();
-        
-        const [respLanc, respBloq] = await Promise.all([
-          authFetch(`${API}/buscar?matricula=${encodeURIComponent(matricula)}&mes=${mes}&ano=${ano}`),
-          authFetch(`${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
-        ]);
+    const hoje = calendarioDataAtual;
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const ano = hoje.getFullYear();
+    
+    const [respLanc, respBloq] = await Promise.all([
+      authFetch(`${API}/buscar?matricula=${encodeURIComponent(matricula)}&mes=${mes}&ano=${ano}`),
+      authFetch(`${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
+    ]);
 
-        const lancJson = await respLanc.json().catch(() => []);
-        const bloqJson = await respBloq.json().catch(() => ({}));
+    const lancJson = await respLanc.json().catch(() => []);
+    const bloqJson = await respBloq.json().catch(() => ({}));
 
-        calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
-        calendarioBloqueios = bloqJson.items || [];
+    calendarioLancamentos = Array.isArray(lancJson) ? lancJson : [];
+    calendarioBloqueios = bloqJson.items || [];
 
-        const dataCampo = document.getElementById("bloqDataInicio").value.trim();
-        if (dataCampo) {
-          diaSelecionado = dataCampo;
-          const partes = dataCampo.split("-");
-          if (partes.length === 3) {
-            calendarioDataAtual = new Date(Number(partes[0]), Number(partes[1]) - 1, 1);
-          }
-        } else if (calendarioLancamentos.length > 0) {
-          const ref = String(calendarioLancamentos[0].datauso || "");
-          if (/^\d{4}-\d{2}-\d{2}$/.test(ref)) {
-            const [a, m] = ref.split("-");
-            calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
-          }
-        } else if (calendarioBloqueios.length > 0) {
-          const ref = String(calendarioBloqueios[0].datauso || "");
-          if (/^\d{4}-\d{2}-\d{2}$/.test(ref)) {
-            const [a, m] = ref.split("-");
-            calendarioDataAtual = new Date(Number(a), Number(m) - 1, 1);
-          }
-        }
+    renderCalendarioColaborador();
+    setStatus("✅ Calendário carregado.", "success");
 
-        renderCalendarioColaborador();
-        setStatus("✅ Calendário carregado.", "success");
-      } catch (err) {
-        console.error(err);
-        setStatus("❌ Erro ao carregar calendário: " + err.message, "danger");
-      }
-    };
+  } catch (err) {
+    console.error(err);
+    setStatus("❌ Erro ao carregar calendário: " + err.message, "danger");
+  }
+};
 
     window.bloquearPeriodo = async function () {
       const matricula = document.getElementById("bloqMatricula").value.trim();
