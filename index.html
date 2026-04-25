@@ -855,6 +855,11 @@ if (!user || !user.matricula) {
   logout();
 }
 
+    if (!user || user.role !== "admin") {
+  alert("🚫 USUÁRIO NÃO AUTORIZADO");
+  window.location.href = "https://coec-epb.github.io/ADD/";
+}
+
     let paginaAtual = 1;
     let totalPages = 1;
     let totalItems = 0;
@@ -1146,15 +1151,33 @@ if (!user || !user.matricula) {
       renderCalendarioColaborador();
     };
 
-    window.mesAnterior = function () {
-      calendarioDataAtual = new Date(calendarioDataAtual.getFullYear(), calendarioDataAtual.getMonth() - 1, 1);
-      renderCalendarioColaborador();
-    };
+    window.mesAnterior = async function () {
+  calendarioDataAtual = new Date(
+    calendarioDataAtual.getFullYear(),
+    calendarioDataAtual.getMonth() - 1,
+    1
+  );
 
-    window.proximoMes = function () {
-      calendarioDataAtual = new Date(calendarioDataAtual.getFullYear(), calendarioDataAtual.getMonth() + 1, 1);
-      renderCalendarioColaborador();
-    };
+  if (calendarioMatriculaAtual) {
+    await carregarCalendarioColaborador(); // 🔥 busca novos dados
+  } else {
+    renderCalendarioColaborador();
+  }
+};
+
+    window.proximoMes = async function () {
+  calendarioDataAtual = new Date(
+    calendarioDataAtual.getFullYear(),
+    calendarioDataAtual.getMonth() + 1,
+    1
+  );
+
+  if (calendarioMatriculaAtual) {
+    await carregarCalendarioColaborador(); // 🔥 busca novos dados
+  } else {
+    renderCalendarioColaborador();
+  }
+};
 
     window.limparCamposBloqueio = function () {
       document.getElementById("bloqMatricula").value = "";
