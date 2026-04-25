@@ -1240,7 +1240,7 @@ if (!user || !user.matricula) {
         calendarioMatriculaAtual = matricula;
 
         const [respLanc, respBloq] = await Promise.all([
-  authFetch(`${API}/buscar?${montarQS(page)}`),
+  authFetch(`${API}/buscar?${montarQS(paginaAtual)}`),
   authFetch(`${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
 ]);
 
@@ -1579,7 +1579,7 @@ if (!user || !user.matricula) {
       try {
         setStatus("🔄 Carregando dados...", "primary");
 
-        const resp = await authFetch(`${API}/buscar-todos?${montarQS(page)}`);
+        const resp = await authFetch(`${API}/buscar-todos?${montarQS(paginaAtual)}`);
 
         if (!resp.ok) {
           const t = await resp.text();
