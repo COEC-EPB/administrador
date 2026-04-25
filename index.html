@@ -854,7 +854,6 @@ const user = getUser();
 if (!user || !user.matricula) {
   logout();
 }
-    const BASE_URL = "https://long-hall-0aaa.pedro-fillype.workers.dev";
 
     let paginaAtual = 1;
     let totalPages = 1;
@@ -877,15 +876,6 @@ if (!user || !user.matricula) {
       limit: 50,
       mostrarSolicitados: false
     };
-
-    if (!matriculaLogin) {
-      window.location.href = "https://coec-epb.github.io/login/";
-    }
-
-    if (!ADMINS.includes(matriculaLogin)) {
-      alert("Acesso negado!");
-      window.location.href = "https://coec-epb.github.io/ADD/";
-    }
 
     document.getElementById("userInfo").innerText = "Logado como: " + user.matricula;
     window.logout = function () {
@@ -1337,12 +1327,7 @@ if (!user || !user.matricula) {
         setStatus("❌ Erro ao bloquear período: " + err.message, "danger");
       }
     };
-  if (auth.user.role !== "admin") {
-  return new Response(JSON.stringify({
-    ok: false,
-    error: "Acesso negado"
-  }), { status: 403, headers: corsHeaders });
-}
+  
     window.desbloquearPeriodo = async function () {
       const matricula = document.getElementById("bloqMatricula").value.trim();
       const dataInicio = document.getElementById("bloqDataInicio").value.trim();
@@ -1594,7 +1579,7 @@ if (!user || !user.matricula) {
       try {
         setStatus("🔄 Carregando dados...", "primary");
 
-        const resp = authFetch(`${API}/buscar-todos?${montarQS(page)}`);
+        const resp = await authFetch(`${API}/buscar-todos?${montarQS(page)}`);
 
         if (!resp.ok) {
           const t = await resp.text();
@@ -1716,7 +1701,7 @@ if (!user || !user.matricula) {
       try {
         setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        const resp1 = authFetch(`${API}/buscar-todos?${montarQS(page)}`);
+        const resp1 = await authFetch(`${API}/buscar-todos?${montarQS(page)}`);
 
         if (!resp1.ok) {
           throw new Error("Falha ao iniciar exportação");
@@ -1729,7 +1714,7 @@ if (!user || !user.matricula) {
         setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
 
         for (let page = 2; page <= tp; page++) {
-          const resp = authFetch(`${API}/buscar-todos?${montarQS(page)}`);
+          const resp = await authFetch(`${API}/buscar-todos?${montarQS(page)}`);
 
           if (!resp.ok) {
             throw new Error(`Falha ao buscar página ${page}`);
