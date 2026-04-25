@@ -1239,10 +1239,14 @@ if (!user || !user.matricula) {
 
         calendarioMatriculaAtual = matricula;
 
+        const hoje = calendarioDataAtual;
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const ano = hoje.getFullYear();
+        
         const [respLanc, respBloq] = await Promise.all([
-  authFetch(`${API}/buscar?${montarQS(paginaAtual)}`),
-  authFetch(`${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
-]);
+          authFetch(`${API}/buscar?matricula=${encodeURIComponent(matricula)}&mes=${mes}&ano=${ano}`),
+          authFetch(`${API}/listar-bloqueios?matricula=${encodeURIComponent(matricula)}`)
+        ]);
 
         const lancJson = await respLanc.json().catch(() => []);
         const bloqJson = await respBloq.json().catch(() => ({}));
