@@ -1705,54 +1705,83 @@ if (!user || !user.matricula) {
     };
 
     window.baixarXLSXTudoFiltrado = async function () {
-      lerFiltrosDaTela();
+  lerFiltrosDaTela();
 
-      try {
-        setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
+  try {
+    setStatus("🔄 Preparando exportação (tudo filtrado)...", "primary");
 
-        const resp1 = await authFetch(`${API}/buscar-todos?${montarQS(page)}`);
+    // PRIMEIRA PÁGINA
+    const resp1 = await authFetch(
+      `${API}/buscar-todos?${montarQS(1)}`
+    );
 
-        if (!resp1.ok) {
-          throw new Error("Falha ao iniciar exportação");
-        }
+    if (!resp1.ok) {
+      throw new Error("Falha ao iniciar exportação");
+    }
 
-        const payload1 = await resp1.json();
-        const tp = Number(payload1.totalPages || 1);
-        const tudo = [...(payload1.items || [])];
+    const payload1 = await resp1.json();
 
-        setStatus(`🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`, "primary");
+    const tp = Number(payload1.totalPages || 1);
 
-        for (let page = 2; page <= tp; page++) {
-          const resp = await authFetch(`${API}/buscar-todos?${montarQS(page)}`);
+    const tudo = [...(payload1.items || [])];
 
-          if (!resp.ok) {
-            throw new Error(`Falha ao buscar página ${page}`);
-          }
+    setStatus(
+      `🔄 Exportando... página 1 de ${tp} (itens: ${tudo.length})`,
+      "primary"
+    );
 
-          const payload = await resp.json();
-          tudo.push(...(payload.items || []));
-          setStatus(`🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`, "primary");
-        }
+    // DEMAIS PÁGINAS
+    for (let page = 2; page <= tp; page++) {
 
-        if (tudo.length === 0) {
-          alert("Nenhum dado para exportar.");
-          setStatus("Nenhum registro encontrado para exportação.", "danger");
-          return;
-        }
+      const resp = await authFetch(
+        `${API}/buscar-todos?${montarQS(page)}`
+      );
 
-        const tudoFormatado = prepararDadosParaExportacao(tudo);
-        const ws = XLSX.utils.json_to_sheet(tudoFormatado);
-        const wb = XLSX.utils.book_new();
-
-        XLSX.utils.book_append_sheet(wb, ws, "Tudo");
-        XLSX.writeFile(wb, "registros_ADD_tudo_filtrado.xlsx");
-
-        setStatus(`✅ Exportado com sucesso (${tudoFormatado.length} registros)`, "success");
-      } catch (err) {
-        console.error(err);
-        setStatus("❌ Erro ao exportar: " + err.message, "danger");
+      if (!resp.ok) {
+        throw new Error(`Falha ao buscar página ${page}`);
       }
-    };
+
+      const payload = await resp.json();
+
+      tudo.push(...(payload.items || []));
+
+      setStatus(
+        `🔄 Exportando... página ${page} de ${tp} (itens: ${tudo.length})`,
+        "primary"
+      );
+    }
+
+    if (!tudo.length) {
+      alert("Nenhum dado para exportar.");
+      return;
+    }
+
+    const tudoFormatado = prepararDadosParaExportacao(tudo);
+
+    const ws = XLSX.utils.json_to_sheet(tudoFormatado);
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "Tudo");
+
+    XLSX.writeFile(
+      wb,
+      "registros_ADD_tudo_filtrado.xlsx"
+    );
+
+    setStatus(
+      `✅ Exportado com sucesso (${tudo.length} registros)`,
+      "success"
+    );
+
+  } catch (err) {
+    console.error(err);
+    setStatus(
+      "❌ Erro ao exportar: " + err.message,
+      "danger"
+    );
+  }
+};
 
     window.excluirSelecionados = async function () {
       const selecionados = [...document.querySelectorAll(".check-item:checked")].map(cb => cb.value);
