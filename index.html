@@ -703,7 +703,6 @@
     </div>
 
     <div id="painelUsuarios" class="filter-card mb-4 painel-oculto">
-    
   <div class="filter-title">
     <div>
       <h6>👥 Gerenciar usuários</h6>
@@ -744,6 +743,21 @@
     <button class="btn btn-outline-secondary" onclick="limparFormularioUsuario()">♻️ Limpar</button>
   </div>
 
+  <div class="divider"></div>
+
+  <div class="row g-3">
+    <div class="col-lg-6 col-md-8">
+      <div class="field-label">Pesquisar usuário</div>
+      <input
+        type="text"
+        id="pesquisaUsuario"
+        class="form-control"
+        placeholder="Digite nome ou matrícula..."
+      >
+      <div class="help">Busca inteligente por nome ou matrícula.</div>
+    </div>
+  </div>
+
   <div class="mini-table-wrap mt-3">
     <table class="table table-sm table-bordered table-hover mb-0">
       <thead class="table-light">
@@ -765,6 +779,7 @@
   </div>
 </div>
 
+    
     <div class="filters-card mb-4">
       <div class="filters-header">
         <div class="filters-title-wrap">
@@ -934,6 +949,7 @@ if (!user || !user.matricula) {
     let totalPages = 1;
     let totalItems = 0;
     let dadosFiltrados = [];
+    let usuariosCache = [];
 
     let calendarioDataAtual = new Date();
     let calendarioLancamentos = [];
@@ -2028,11 +2044,19 @@ if (!user || !user.matricula) {
       paginaAtual = 1;
       await carregarPagina(1);
     });
-    window.limparFormularioUsuario = function () {
+    
+   window.limparFormularioUsuario = function () {
   document.getElementById("novoUserMatricula").value = "";
   document.getElementById("novoUserNome").value = "";
   document.getElementById("novoUserSenha").value = "";
   document.getElementById("novoUserRole").value = "usuario";
+
+  const campoBusca = document.getElementById("pesquisaUsuario");
+  if (campoBusca) {
+    campoBusca.value = "";
+  }
+
+  renderUsuariosFiltrados();
 };
     
 document.addEventListener("DOMContentLoaded", async () => {
@@ -2060,40 +2084,12 @@ window.carregarUsuarios = async function () {
       throw new Error(json.error || "Erro ao carregar usuários.");
     }
 
-    const lista = json.items || [];
-
-    if (!lista.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" class="text-center text-muted py-3">Nenhum usuário cadastrado.</td>
-        </tr>
-      `;
-      return;
-    }
-
-    tbody.innerHTML = lista.map(item => `
-      <tr>
-        <td>${escaparHTML(item.matricula)}</td>
-        <td>${escaparHTML(item.nome)}</td>
-        <td>${escaparHTML(item.role)}</td>
-        <td>${Number(item.ativo) === 1 ? "Sim" : "Não"}</td>
-        <td>${escaparHTML(item.criado_em || "")}</td>
-        <td class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-sm btn-outline-${Number(item.ativo) === 1 ? "warning" : "success"}"
-                  onclick="toggleUsuarioAtivo('${escaparHTML(item.matricula)}', ${Number(item.ativo) === 1 ? 0 : 1})">
-            ${Number(item.ativo) === 1 ? "Desativar" : "Ativar"}
-          </button>
-
-          <button class="btn btn-sm btn-outline-danger"
-                  onclick="excluirUsuario('${escaparHTML(item.matricula)}')">
-            Excluir
-          </button>
-        </td>
-      </tr>
-    `).join("");
+    usuariosCache = json.items || [];
+    renderUsuariosFiltrados();
 
   } catch (err) {
     console.error(err);
+    usuariosCache = [];
     tbody.innerHTML = `
       <tr>
         <td colspan="6" class="text-center text-danger py-3">Erro ao carregar usuários.</td>
@@ -2101,6 +2097,58 @@ window.carregarUsuarios = async function () {
     `;
   }
 };
+    function renderUsuariosFiltrados() {
+  const tbody = document.getElementById("tabelaUsuarios");
+  const termo = normalizarTextoBusca(
+    document.getElementById("pesquisaUsuario")?.value || ""
+  );
+
+  let lista = [...usuariosCache];
+
+  if (termo) {
+    lista = lista.filter(item => {
+      const nome = normalizarTextoBusca(item.nome || "");
+      const matricula = String(item.matricula || "").trim().toLowerCase();
+      return nome.includes(termo) || matricula.includes(termo);
+    });
+  }
+
+  if (!lista.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-muted py-3">
+          Nenhum usuário encontrado.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(item => `
+    <tr>
+      <td>${escaparHTML(item.matricula)}</td>
+      <td>${escaparHTML(item.nome)}</td>
+      <td>${escaparHTML(item.role)}</td>
+      <td>${Number(item.ativo) === 1 ? "Sim" : "Não"}</td>
+      <td>${escaparHTML(item.criado_em || "")}</td>
+      <td class="d-flex gap-2 flex-wrap">
+        <button
+          class="btn btn-sm btn-outline-${Number(item.ativo) === 1 ? "warning" : "success"}"
+          onclick="toggleUsuarioAtivo('${escaparHTML(item.matricula)}', ${Number(item.ativo) === 1 ? 0 : 1})"
+        >
+          ${Number(item.ativo) === 1 ? "Desativar" : "Ativar"}
+        </button>
+
+        <button
+          class="btn btn-sm btn-outline-danger"
+          onclick="excluirUsuario('${escaparHTML(item.matricula)}')"
+        >
+          Excluir
+        </button>
+      </td>
+    </tr>
+  `).join("");
+}
 
 window.adicionarUsuario = async function () {
   const matricula = document.getElementById("novoUserMatricula").value.trim();
@@ -2146,7 +2194,8 @@ window.adicionarUsuario = async function () {
     setStatus("❌ Erro ao adicionar usuário: " + err.message, "danger");
   }
 };
-    window.togglePainelUsuarios = function () {
+    
+ window.togglePainelUsuarios = function () {
   const painel = document.getElementById("painelUsuarios");
   const botao = document.getElementById("btnToggleUsuarios");
 
@@ -2159,8 +2208,11 @@ window.adicionarUsuario = async function () {
     painel.classList.remove("show");
     botao.classList.remove("ativo");
     botao.innerText = "👥 Mostrar usuários";
+
+    const campoBusca = document.getElementById("pesquisaUsuario");
+    if (campoBusca) campoBusca.value = "";
+
   } else {
-    // fecha bloqueio se estiver aberto
     painelBloqueio.classList.remove("show");
     botaoBloqueio.classList.remove("ativo");
     botaoBloqueio.innerText = "🔒 Mostrar bloqueio de colaborador";
@@ -2230,6 +2282,13 @@ window.toggleUsuarioAtivo = async function (matricula, ativo) {
     setStatus("❌ Erro ao atualizar usuário: " + err.message, "danger");
   }
 };
+    
+document.addEventListener("input", function (e) {
+  if (e.target && e.target.id === "pesquisaUsuario") {
+    renderUsuariosFiltrados();
+  }
+});
+
   </script>
    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ab3e837119ed4133bd616d3b06ef0e25"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
