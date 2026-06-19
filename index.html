@@ -697,6 +697,68 @@
       </div>
     </div>
 
+    <div class="filter-card mb-4">
+  <div class="filter-title">
+    <div>
+      <h6>👥 Gerenciar usuários</h6>
+      <p class="filter-sub">Somente administradores podem adicionar, excluir e ativar/desativar usuários.</p>
+    </div>
+    <button class="btn btn-outline-primary btn-sm" onclick="carregarUsuarios()">Atualizar lista</button>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-3 col-md-6">
+      <div class="field-label">Matrícula</div>
+      <input type="text" id="novoUserMatricula" class="form-control" placeholder="Digite a matrícula">
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+      <div class="field-label">Nome</div>
+      <input type="text" id="novoUserNome" class="form-control" placeholder="Digite o nome">
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="field-label">Senha</div>
+      <input type="password" id="novoUserSenha" class="form-control" placeholder="Digite a senha">
+    </div>
+
+    <div class="col-lg-2 col-md-6">
+      <div class="field-label">Perfil</div>
+      <select id="novoUserRole" class="form-select">
+        <option value="usuario" selected>Usuário</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-success" onclick="adicionarUsuario()">➕ Adicionar usuário</button>
+    <button class="btn btn-outline-secondary" onclick="limparFormularioUsuario()">♻️ Limpar</button>
+  </div>
+
+  <div class="mini-table-wrap mt-3">
+    <table class="table table-sm table-bordered table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Matrícula</th>
+          <th>Nome</th>
+          <th>Perfil</th>
+          <th>Ativo</th>
+          <th>Criado em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaUsuarios">
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">Carregando usuários...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
     <div class="filters-card mb-4">
       <div class="filters-header">
         <div class="filters-title-wrap">
@@ -1960,6 +2022,182 @@ if (!user || !user.matricula) {
       paginaAtual = 1;
       await carregarPagina(1);
     });
+    window.limparFormularioUsuario = function () {
+  document.getElementById("novoUserMatricula").value = "";
+  document.getElementById("novoUserNome").value = "";
+  document.getElementById("novoUserSenha").value = "";
+  document.getElementById("novoUserRole").value = "usuario";
+};
+    
+document.addEventListener("DOMContentLoaded", async () => {
+  lerFiltrosDaTela();
+  await carregarPagina(1);
+  await carregarUsuarios();
+});
+
+
+window.carregarUsuarios = async function () {
+  const tbody = document.getElementById("tabelaUsuarios");
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" class="text-center text-muted py-3">Carregando usuários...</td>
+    </tr>
+  `;
+
+  try {
+    const resp = await authFetch(`${API}/usuarios`);
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || json.ok === false) {
+      throw new Error(json.error || "Erro ao carregar usuários.");
+    }
+
+    const lista = json.items || [];
+
+    if (!lista.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">Nenhum usuário cadastrado.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = lista.map(item => `
+      <tr>
+        <td>${escaparHTML(item.matricula)}</td>
+        <td>${escaparHTML(item.nome)}</td>
+        <td>${escaparHTML(item.role)}</td>
+        <td>${Number(item.ativo) === 1 ? "Sim" : "Não"}</td>
+        <td>${escaparHTML(item.criado_em || "")}</td>
+        <td class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-sm btn-outline-${Number(item.ativo) === 1 ? "warning" : "success"}"
+                  onclick="toggleUsuarioAtivo('${escaparHTML(item.matricula)}', ${Number(item.ativo) === 1 ? 0 : 1})">
+            ${Number(item.ativo) === 1 ? "Desativar" : "Ativar"}
+          </button>
+
+          <button class="btn btn-sm btn-outline-danger"
+                  onclick="excluirUsuario('${escaparHTML(item.matricula)}')">
+            Excluir
+          </button>
+        </td>
+      </tr>
+    `).join("");
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-danger py-3">Erro ao carregar usuários.</td>
+      </tr>
+    `;
+  }
+};
+
+window.adicionarUsuario = async function () {
+  const matricula = document.getElementById("novoUserMatricula").value.trim();
+  const nome = document.getElementById("novoUserNome").value.trim();
+  const senha = document.getElementById("novoUserSenha").value.trim();
+  const role = document.getElementById("novoUserRole").value.trim();
+
+  if (!matricula || !nome || !senha || !role) {
+    alert("Preencha matrícula, nome, senha e perfil.");
+    return;
+  }
+
+  try {
+    setStatus("🔄 Adicionando usuário...", "primary");
+
+    const resp = await authFetch(`${API}/usuarios`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        matricula,
+        nome,
+        senha,
+        role
+      })
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || json.ok === false) {
+      throw new Error(json.error || "Erro ao adicionar usuário.");
+    }
+
+    alert("✅ Usuário adicionado com sucesso.");
+    limparFormularioUsuario();
+    await carregarUsuarios();
+    setStatus("✅ Usuário adicionado com sucesso.", "success");
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ " + err.message);
+    setStatus("❌ Erro ao adicionar usuário: " + err.message, "danger");
+  }
+};
+
+window.excluirUsuario = async function (matricula) {
+  if (!matricula) return;
+
+  const confirmar = confirm(`Tem certeza que deseja excluir o usuário ${matricula}?`);
+  if (!confirmar) return;
+
+  try {
+    setStatus("🔄 Excluindo usuário...", "primary");
+
+    const resp = await authFetch(`${API}/usuarios/${encodeURIComponent(matricula)}`, {
+      method: "DELETE"
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || json.ok === false) {
+      throw new Error(json.error || "Erro ao excluir usuário.");
+    }
+
+    alert("✅ Usuário excluído com sucesso.");
+    await carregarUsuarios();
+    setStatus("✅ Usuário excluído com sucesso.", "success");
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ " + err.message);
+    setStatus("❌ Erro ao excluir usuário: " + err.message, "danger");
+  }
+};
+
+window.toggleUsuarioAtivo = async function (matricula, ativo) {
+  try {
+    setStatus("🔄 Atualizando usuário...", "primary");
+
+    const resp = await authFetch(`${API}/usuarios/${encodeURIComponent(matricula)}/ativo`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ ativo })
+    });
+
+    const json = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || json.ok === false) {
+      throw new Error(json.error || "Erro ao atualizar usuário.");
+    }
+
+    await carregarUsuarios();
+    setStatus("✅ Usuário atualizado com sucesso.", "success");
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ " + err.message);
+    setStatus("❌ Erro ao atualizar usuário: " + err.message, "danger");
+  }
+};
   </script>
    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ab3e837119ed4133bd616d3b06ef0e25"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
