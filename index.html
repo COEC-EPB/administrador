@@ -583,6 +583,11 @@
         <button id="btnToggleBloqueio" class="btn-toggle-bloqueio" onclick="togglePainelBloqueio()">
           🔒 Mostrar bloqueio de colaborador
         </button>
+        
+<button id="btnToggleUsuarios" class="btn-toggle-bloqueio" onclick="togglePainelUsuarios()">
+        👥 Mostrar usuários
+      </button>
+
       </div>
     </div>
 
@@ -697,7 +702,8 @@
       </div>
     </div>
 
-    <div class="filter-card mb-4">
+    <div id="painelUsuarios" class="filter-card mb-4 painel-oculto">
+    
   <div class="filter-title">
     <div>
       <h6>👥 Gerenciar usuários</h6>
@@ -2138,6 +2144,32 @@ window.adicionarUsuario = async function () {
     console.error(err);
     alert("❌ " + err.message);
     setStatus("❌ Erro ao adicionar usuário: " + err.message, "danger");
+  }
+};
+    window.togglePainelUsuarios = function () {
+  const painel = document.getElementById("painelUsuarios");
+  const botao = document.getElementById("btnToggleUsuarios");
+
+  const painelBloqueio = document.getElementById("painelBloqueio");
+  const botaoBloqueio = document.getElementById("btnToggleBloqueio");
+
+  const aberto = painel.classList.contains("show");
+
+  if (aberto) {
+    painel.classList.remove("show");
+    botao.classList.remove("ativo");
+    botao.innerText = "👥 Mostrar usuários";
+  } else {
+    // fecha bloqueio se estiver aberto
+    painelBloqueio.classList.remove("show");
+    botaoBloqueio.classList.remove("ativo");
+    botaoBloqueio.innerText = "🔒 Mostrar bloqueio de colaborador";
+
+    painel.classList.add("show");
+    botao.classList.add("ativo");
+    botao.innerText = "🔓 Ocultar usuários";
+
+    carregarUsuarios();
   }
 };
 
