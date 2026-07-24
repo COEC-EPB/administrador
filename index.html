@@ -711,18 +711,28 @@
     <button class="btn btn-outline-primary btn-sm" onclick="carregarUsuarios()">Atualizar lista</button>
   </div>
 
-  <div class="row g-3">
+  <div class="row g-2">
     <div class="col-lg-3 col-md-6">
       <div class="field-label">Matrícula</div>
       <input type="text" id="novoUserMatricula" class="form-control" placeholder="Digite a matrícula">
     </div>
 
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-3 col-md-6">
       <div class="field-label">Nome</div>
       <input type="text" id="novoUserNome" class="form-control" placeholder="Digite o nome">
     </div>
 
     <div class="col-lg-3 col-md-6">
+  <div class="field-label">CPF</div>
+
+  <input
+    type="text"
+    id="novoUserCPF"
+    class="form-control"
+    placeholder="Digite somente números">
+</div>
+
+    <div class="col-lg-2 col-md-6">
       <div class="field-label">Senha</div>
       <input type="password" id="novoUserSenha" class="form-control" placeholder="Digite a senha">
     </div>
@@ -2048,6 +2058,7 @@ if (!user || !user.matricula) {
    window.limparFormularioUsuario = function () {
   document.getElementById("novoUserMatricula").value = "";
   document.getElementById("novoUserNome").value = "";
+  document.getElementById("novoUserCPF").value = "";
   document.getElementById("novoUserSenha").value = "";
   document.getElementById("novoUserRole").value = "usuario";
 
@@ -2153,13 +2164,20 @@ window.carregarUsuarios = async function () {
 window.adicionarUsuario = async function () {
   const matricula = document.getElementById("novoUserMatricula").value.trim();
   const nome = document.getElementById("novoUserNome").value.trim();
+  const cpf =document.getElementById("novoUserCPF").value9    .replace(/\D/g, "");
   const senha = document.getElementById("novoUserSenha").value.trim();
   const role = document.getElementById("novoUserRole").value.trim();
+  
 
-  if (!matricula || !nome || !senha || !role) {
-    alert("Preencha matrícula, nome, senha e perfil.");
-    return;
-  }
+  if (!matricula || !nome || !cpf || !senha) {
+  alert("Preencha matrícula, nome, CPF e senha.");
+  return;
+}
+
+if (cpf.length !== 11) {
+  alert("CPF deve possuir 11 números.");
+  return;
+}
 
   try {
     setStatus("🔄 Adicionando usuário...", "primary");
@@ -2172,6 +2190,7 @@ window.adicionarUsuario = async function () {
       body: JSON.stringify({
         matricula,
         nome,
+        cpf,
         senha,
         role
       })
