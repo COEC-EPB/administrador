@@ -2164,7 +2164,9 @@ window.carregarUsuarios = async function () {
 window.adicionarUsuario = async function () {
   const matricula = document.getElementById("novoUserMatricula").value.trim();
   const nome = document.getElementById("novoUserNome").value.trim();
-  const cpf =document.getElementById("novoUserCPF").value9    .replace(/\D/g, "");
+  const cpf =
+  document.getElementById("novoUserCPF").value
+    .replace(/\D/g, "");
   const senha = document.getElementById("novoUserSenha").value.trim();
   const role = document.getElementById("novoUserRole").value.trim();
   
