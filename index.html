@@ -2038,12 +2038,7 @@ if (!user || !user.matricula) {
       }
     });
 
-    document.addEventListener("DOMContentLoaded", async () => {
-      lerFiltrosDaTela();
-      await carregarPagina(1);
-    });
-
-    document.getElementById("selectPorPagina").addEventListener("change", async () => {
+      document.getElementById("selectPorPagina").addEventListener("change", async () => {
       lerFiltrosDaTela();
       paginaAtual = 1;
       await carregarPagina(1);
