@@ -738,6 +738,17 @@
     </div>
 
     <div class="col-lg-2 col-md-6">
+  <div class="field-label">Regional</div>
+
+  <select id="novoUserRegional" class="form-select">
+    <option value="">Selecione</option>
+    <option value="LESTE">LESTE</option>
+    <option value="CENTRO">CENTRO</option>
+    <option value="OESTE">OESTE</option>
+  </select>
+</div>
+
+    <div class="col-lg-2 col-md-6">
       <div class="field-label">Perfil</div>
       <select id="novoUserRole" class="form-select">
         <option value="usuario" selected>Usuário</option>
@@ -772,13 +783,14 @@
     <table class="table table-sm table-bordered table-hover mb-0">
       <thead class="table-light">
         <tr>
-          <th>Matrícula</th>
-          <th>Nome</th>
-          <th>Perfil</th>
-          <th>Ativo</th>
-          <th>Criado em</th>
-          <th>Ações</th>
-        </tr>
+        <th>Matrícula</th>
+        <th>Nome</th>
+        <th>Regional</th>
+        <th>Perfil</th>
+        <th>Ativo</th>
+        <th>Criado em</th>
+        <th>Ações</th>
+      </tr>
       </thead>
       <tbody id="tabelaUsuarios">
         <tr>
@@ -2061,6 +2073,7 @@ if (!user || !user.matricula) {
   document.getElementById("novoUserCPF").value = "";
   document.getElementById("novoUserSenha").value = "";
   document.getElementById("novoUserRole").value = "usuario";
+  document.getElementById("novoUserRegional").value = "";
 
   const campoBusca = document.getElementById("pesquisaUsuario");
   if (campoBusca) {
@@ -2139,6 +2152,7 @@ window.carregarUsuarios = async function () {
     <tr>
       <td>${escaparHTML(item.matricula)}</td>
       <td>${escaparHTML(item.nome)}</td>
+      <td>${escaparHTML(item.regional || "")}</td>
       <td>${escaparHTML(item.role)}</td>
       <td>${Number(item.ativo) === 1 ? "Sim" : "Não"}</td>
       <td>${escaparHTML(item.criado_em || "")}</td>
@@ -2169,10 +2183,11 @@ window.adicionarUsuario = async function () {
     .replace(/\D/g, "");
   const senha = document.getElementById("novoUserSenha").value.trim();
   const role = document.getElementById("novoUserRole").value.trim();
+  const regional = document.getElementById("novoUserRegional").value.trim();
   
 
-  if (!matricula || !nome || !cpf || !senha) {
-  alert("Preencha matrícula, nome, CPF e senha.");
+  if (!matricula || !nome || !cpf || !senha || !regional) {
+  alert("Preencha matrícula, nome, CPF, senha e regional.");
   return;
 }
 
@@ -2194,7 +2209,8 @@ if (cpf.length !== 11) {
         nome,
         cpf,
         senha,
-        role
+        role,
+        regional
       })
     });
 
