@@ -693,7 +693,7 @@
           </thead>
           <tbody id="tabelaBloqueios">
             <tr>
-              <td colspan="7" class="text-center text-muted py-3">
+              <td colspan="6" class="text-center text-muted py-3">
                 Informe uma matrícula para consultar os bloqueios.
               </td>
             </tr>
@@ -794,7 +794,7 @@
       </thead>
       <tbody id="tabelaUsuarios">
         <tr>
-          <td colspan="7" class="text-center text-muted py-3">Carregando usuários...</td>
+          <td colspan="6" class="text-center text-muted py-3">Carregando usuários...</td>
         </tr>
       </tbody>
     </table>
@@ -1304,7 +1304,7 @@ if (!user || !user.matricula) {
       document.getElementById("painelListaBloqueios").classList.remove("show");
       document.getElementById("tabelaBloqueios").innerHTML = `
         <tr>
-          <td colspan="7" class="text-center text-muted py-3">
+          <td colspan="6" class="text-center text-muted py-3">
             Informe uma matrícula para consultar os bloqueios.
           </td>
         </tr>
@@ -1556,7 +1556,7 @@ if (!user || !user.matricula) {
         painelLista.classList.remove("show");
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center text-muted py-3">
+            <td colspan="6" class="text-center text-muted py-3">
               Informe uma matrícula para consultar os bloqueios.
             </td>
           </tr>
@@ -1569,7 +1569,7 @@ if (!user || !user.matricula) {
 
       tbody.innerHTML = `
         <tr>
-          <td colspan="7" class="text-center text-muted py-3">Carregando bloqueios...</td>
+          <td colspan="6" class="text-center text-muted py-3">Carregando bloqueios...</td>
         </tr>
       `;
 
@@ -1589,7 +1589,7 @@ if (!user || !user.matricula) {
         if (!lista.length) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="7" class="text-center text-muted py-3">
+              <td colspan="6" class="text-center text-muted py-3">
                 Nenhum bloqueio ativo para esta matrícula.
               </td>
             </tr>
@@ -2010,7 +2010,7 @@ if (!user || !user.matricula) {
         document.getElementById("painelListaBloqueios").classList.remove("show");
         document.getElementById("tabelaBloqueios").innerHTML = `
           <tr>
-            <td colspan="7" class="text-center text-muted py-3">
+            <td colspan="6" class="text-center text-muted py-3">
               Informe uma matrícula para consultar os bloqueios.
             </td>
           </tr>
@@ -2038,7 +2038,12 @@ if (!user || !user.matricula) {
       }
     });
 
-      document.getElementById("selectPorPagina").addEventListener("change", async () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+      lerFiltrosDaTela();
+      await carregarPagina(1);
+    });
+
+    document.getElementById("selectPorPagina").addEventListener("change", async () => {
       lerFiltrosDaTela();
       paginaAtual = 1;
       await carregarPagina(1);
@@ -2090,7 +2095,7 @@ window.carregarUsuarios = async function () {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="7" class="text-center text-muted py-3">Carregando usuários...</td>
+      <td colspan="6" class="text-center text-muted py-3">Carregando usuários...</td>
     </tr>
   `;
 
@@ -2111,7 +2116,7 @@ window.carregarUsuarios = async function () {
     usuariosCache = [];
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="text-center text-danger py-3">Erro ao carregar usuários.</td>
+        <td colspan="6" class="text-center text-danger py-3">Erro ao carregar usuários.</td>
       </tr>
     `;
   }
@@ -2135,7 +2140,7 @@ window.carregarUsuarios = async function () {
   if (!lista.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="text-center text-muted py-3">
+        <td colspan="6" class="text-center text-muted py-3">
           Nenhum usuário encontrado.
         </td>
       </tr>
