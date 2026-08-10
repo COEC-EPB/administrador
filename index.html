@@ -796,7 +796,7 @@
       </thead>
       <tbody id="tabelaUsuarios">
         <tr>
-          <td colspan="6" class="text-center text-muted py-3">Carregando usuários...</td>
+          <td colspan="7" class="text-center text-muted py-3">Carregando usuários...</td>
         </tr>
       </tbody>
     </table>
@@ -2110,7 +2110,7 @@ window.carregarUsuarios = async function () {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="6" class="text-center text-muted py-3">Carregando usuários...</td>
+      <td colspan="7" class="text-center text-muted py-3">Carregando usuários...</td>
     </tr>
   `;
 
@@ -2131,7 +2131,7 @@ window.carregarUsuarios = async function () {
     usuariosCache = [];
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="text-center text-danger py-3">Erro ao carregar usuários.</td>
+        <td colspan="7" class="text-center text-danger py-3">Erro ao carregar usuários.</td>
       </tr>
     `;
   }
@@ -2184,8 +2184,12 @@ window.editarUsuario = function(matricula){
 
 };
     
-    function renderUsuariosFiltrados() {
+    <script>
+function renderUsuariosFiltrados() {
   const tbody = document.getElementById("tabelaUsuarios");
+
+  if (!tbody) return;
+
   const termo = normalizarTextoBusca(
     document.getElementById("pesquisaUsuario")?.value || ""
   );
@@ -2196,14 +2200,18 @@ window.editarUsuario = function(matricula){
     lista = lista.filter(item => {
       const nome = normalizarTextoBusca(item.nome || "");
       const matricula = String(item.matricula || "").trim().toLowerCase();
-      return nome.includes(termo) || matricula.includes(termo);
+
+      return (
+        nome.includes(termo) ||
+        matricula.includes(termo)
+      );
     });
   }
 
   if (!lista.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="text-center text-muted py-3">
+        <td colspan="7" class="text-center text-muted py-3">
           Nenhum usuário encontrado.
         </td>
       </tr>
@@ -2211,44 +2219,66 @@ window.editarUsuario = function(matricula){
     return;
   }
 
-  tbody.innerHTML = lista.map(item => `
-    <tr>
-      <td>
+  tbody.innerHTML = lista.map(item => {
+    const ativo = Number(item.ativo) === 1;
 
-  <div class="btn-group btn-group-sm">
+    return `
+      <tr>
+        <td>${escaparHTML(item.matricula || "")}</td>
 
-    <button
-      class="btn btn-outline-primary"
-      onclick="editarUsuario('${escaparHTML(item.matricula)}')"
-      title="Editar"
-    >
-      ✏️
-    </button>
+        <td>${escaparHTML(item.nome || "")}</td>
 
-    <button
-      class="btn btn-outline-${Number(item.ativo) === 1 ? "warning" : "success"}"
-      onclick="toggleUsuarioAtivo(
-        '${escaparHTML(item.matricula)}',
-        ${Number(item.ativo) === 1 ? 0 : 1}
-      )"
-      title="${Number(item.ativo) === 1 ? 'Desativar' : 'Ativar'}"
-    >
-      ${Number(item.ativo) === 1 ? "🔒" : "🔓"}
-    </button>
+        <td>${escaparHTML(item.regional || "")}</td>
 
-    <button
-      class="btn btn-outline-danger"
-      onclick="excluirUsuario('${escaparHTML(item.matricula)}')"
-      title="Excluir"
-    >
-      🗑️
-    </button>
+        <td>
+          <span class="badge ${item.role === "admin" ? "bg-primary" : "bg-secondary"}">
+            ${escaparHTML(item.role === "admin" ? "Admin" : "Usuário")}
+          </span>
+        </td>
 
-  </div>
+        <td>
+          <span class="badge ${ativo ? "bg-success" : "bg-danger"}">
+            ${ativo ? "Sim" : "Não"}
+          </span>
+        </td>
 
-</td>
-    </tr>
-  `).join("");
+        <td>${escaparHTML(formatarDataBR(item.criado_em || ""))}</td>
+
+        <td>
+          <div class="btn-group btn-group-sm">
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              onclick="editarUsuario('${escaparHTML(item.matricula)}')"
+              title="Editar usuário"
+            >
+              ✏️
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-${ativo ? "warning" : "success"}"
+              onclick="toggleUsuarioAtivo('${escaparHTML(item.matricula)}', ${ativo ? 0 : 1})"
+              title="${ativo ? "Desativar usuário" : "Ativar usuário"}"
+            >
+              ${ativo ? "🔒" : "🔓"}
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-danger"
+              onclick="excluirUsuario('${escaparHTML(item.matricula)}')"
+              title="Excluir usuário"
+            >
+              🗑️
+            </button>
+
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
 }
 
 window.adicionarUsuario = async function () {
