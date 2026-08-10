@@ -2081,6 +2081,19 @@ if (!user || !user.matricula) {
   if (campoBusca) {
     campoBusca.value = "";
   }
+     document.getElementById(
+  "novoUserMatricula"
+).disabled = false;
+
+const btn =
+  document.querySelector(
+    'button[onclick="adicionarUsuario()"]'
+  );
+
+if(btn){
+  btn.innerHTML = "➕ Adicionar usuário";
+  btn.onclick = adicionarUsuario;
+}
 
   renderUsuariosFiltrados();
 };
@@ -2123,6 +2136,54 @@ window.carregarUsuarios = async function () {
     `;
   }
 };
+window.editarUsuario = function(matricula){
+
+  const usuario =
+    usuariosCache.find(
+      x => String(x.matricula) === String(matricula)
+    );
+
+  if(!usuario){
+    alert("Usuário não encontrado.");
+    return;
+  }
+
+  document.getElementById("novoUserMatricula").value =
+    usuario.matricula || "";
+
+  document.getElementById("novoUserNome").value =
+    usuario.nome || "";
+
+  document.getElementById("novoUserCPF").value =
+    usuario.cpf || "";
+
+  document.getElementById("novoUserRegional").value =
+    usuario.regional || "";
+
+  document.getElementById("novoUserRole").value =
+    usuario.role || "usuario";
+
+  document.getElementById("novoUserSenha").value = "";
+
+  document.getElementById("novoUserMatricula").disabled = true;
+
+  const btn =
+    document.querySelector(
+      'button[onclick="adicionarUsuario()"]'
+    );
+
+  if(btn){
+    btn.innerHTML = "💾 Atualizar usuário";
+    btn.onclick = atualizarUsuario;
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+};
+    
     function renderUsuariosFiltrados() {
   const tbody = document.getElementById("tabelaUsuarios");
   const termo = normalizarTextoBusca(
@@ -2152,27 +2213,40 @@ window.carregarUsuarios = async function () {
 
   tbody.innerHTML = lista.map(item => `
     <tr>
-      <td>${escaparHTML(item.matricula)}</td>
-      <td>${escaparHTML(item.nome)}</td>
-      <td>${escaparHTML(item.regional || "")}</td>
-      <td>${escaparHTML(item.role)}</td>
-      <td>${Number(item.ativo) === 1 ? "Sim" : "Não"}</td>
-      <td>${escaparHTML(item.criado_em || "")}</td>
-      <td class="d-flex gap-2 flex-wrap">
-        <button
-          class="btn btn-sm btn-outline-${Number(item.ativo) === 1 ? "warning" : "success"}"
-          onclick="toggleUsuarioAtivo('${escaparHTML(item.matricula)}', ${Number(item.ativo) === 1 ? 0 : 1})"
-        >
-          ${Number(item.ativo) === 1 ? "Desativar" : "Ativar"}
-        </button>
+      <td>
 
-        <button
-          class="btn btn-sm btn-outline-danger"
-          onclick="excluirUsuario('${escaparHTML(item.matricula)}')"
-        >
-          Excluir
-        </button>
-      </td>
+  <div class="btn-group btn-group-sm">
+
+    <button
+      class="btn btn-outline-primary"
+      onclick="editarUsuario('${escaparHTML(item.matricula)}')"
+      title="Editar"
+    >
+      ✏️
+    </button>
+
+    <button
+      class="btn btn-outline-${Number(item.ativo) === 1 ? "warning" : "success"}"
+      onclick="toggleUsuarioAtivo(
+        '${escaparHTML(item.matricula)}',
+        ${Number(item.ativo) === 1 ? 0 : 1}
+      )"
+      title="${Number(item.ativo) === 1 ? 'Desativar' : 'Ativar'}"
+    >
+      ${Number(item.ativo) === 1 ? "🔒" : "🔓"}
+    </button>
+
+    <button
+      class="btn btn-outline-danger"
+      onclick="excluirUsuario('${escaparHTML(item.matricula)}')"
+      title="Excluir"
+    >
+      🗑️
+    </button>
+
+  </div>
+
+</td>
     </tr>
   `).join("");
 }
@@ -2262,6 +2336,84 @@ if (cpf.length !== 11) {
 
     carregarUsuarios();
   }
+};
+
+    window.atualizarUsuario = async function(){
+
+  const matricula =
+    document.getElementById("novoUserMatricula").value.trim();
+
+  const nome =
+    document.getElementById("novoUserNome").value.trim();
+
+  const cpf =
+    document.getElementById("novoUserCPF").value.replace(/\D/g,"");
+
+  const regional =
+    document.getElementById("novoUserRegional").value;
+
+  const role =
+    document.getElementById("novoUserRole").value;
+
+  try{
+
+    const resp =
+      await authFetch(
+        `${API}/usuarios/${encodeURIComponent(matricula)}`,
+        {
+          method:"PUT",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            nome,
+            cpf,
+            regional,
+            role
+          })
+        }
+      );
+
+    const json =
+      await resp.json().catch(()=>({}));
+
+    if(!resp.ok || json.ok === false){
+      throw new Error(
+        json.error ||
+        "Erro ao atualizar usuário."
+      );
+    }
+
+    alert("✅ Usuário atualizado com sucesso.");
+
+    limparFormularioUsuario();
+
+    document.getElementById(
+      "novoUserMatricula"
+    ).disabled = false;
+
+    const btn =
+      document.querySelector(
+        'button[onclick="adicionarUsuario()"]'
+      );
+
+    if(btn){
+      btn.innerHTML = "➕ Adicionar usuário";
+      btn.onclick = adicionarUsuario;
+    }
+
+    await carregarUsuarios();
+
+  }catch(err){
+
+    console.error(err);
+
+    alert(
+      "❌ " + err.message
+    );
+
+  }
+
 };
 
 window.excluirUsuario = async function (matricula) {
