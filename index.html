@@ -2367,148 +2367,64 @@ if (cpf.length !== 11) {
   }
 };
 
-    window.atualizarUsuario = async function () {
-  const matricula = document
-    .getElementById("novoUserMatricula")
-    .value
-    .trim();
+   window.atualizarUsuario = async function () {
 
-  const nome = document
-    .getElementById("novoUserNome")
-    .value
-    .trim();
+  const matricula =
+    document.getElementById("novoUserMatricula")
+      .value.trim();
 
-  const cpf = document
-    .getElementById("novoUserCPF")
-    .value
-    .replace(/\D/g, "");
+  const roleTela =
+    document.getElementById("novoUserRole")
+      .value.trim();
 
-  const regional = document
-    .getElementById("novoUserRegional")
-    .value
-    .trim();
-
-  const role = document
-    .getElementById("novoUserRole")
-    .value
-    .trim();
-
-  const senha = document
-    .getElementById("novoUserSenha")
-    .value
-    .trim();
-
-  if (!matricula || !nome || !cpf || !regional || !role) {
-    alert("Preencha matrícula, nome, CPF, regional e perfil.");
-    return;
-  }
-
-  if (cpf.length !== 11) {
-    alert("CPF deve possuir 11 números.");
-    return;
-  }
-
-  if (!["usuario", "admin"].includes(role)) {
-    alert("Perfil inválido.");
-    return;
-  }
-
-  const dadosAtualizacao = {
-    nome,
-    cpf,
-    regional,
-    role
-  };
-
-  // Somente envia a senha se o administrador preencher o campo
-  if (senha) {
-    dadosAtualizacao.senha = senha;
-  }
+  const role =
+    roleTela === "admin"
+      ? "admin"
+      : "user";
 
   try {
-    setStatus("🔄 Atualizando usuário...", "primary");
 
-    const url =
-      `${API}/usuarios/${encodeURIComponent(matricula)}`;
-
-    console.log("Atualizando usuário:", {
-      url,
-      matricula,
-      dadosAtualizacao: {
-        ...dadosAtualizacao,
-        senha: senha ? "[INFORMADA]" : "[NÃO ALTERADA]"
+    const resp = await authFetch(
+      `${API}/usuarios/${encodeURIComponent(matricula)}/role`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          role
+        })
       }
-    });
+    );
 
-    const resp = await authFetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(dadosAtualizacao)
-    });
-
-    const respostaTexto = await resp.text();
-
-    let json = {};
-
-    try {
-      json = respostaTexto
-        ? JSON.parse(respostaTexto)
-        : {};
-    } catch {
-      json = {
-        error: respostaTexto || `HTTP ${resp.status}`
-      };
-    }
+    const json =
+      await resp.json();
 
     if (!resp.ok || json.ok === false) {
-      console.error("Erro da API ao atualizar usuário:", {
-        status: resp.status,
-        statusText: resp.statusText,
-        url,
-        resposta: respostaTexto
-      });
-
-      if (resp.status === 404) {
-        throw new Error(
-          `Rota de atualização não encontrada: PUT ${url}`
-        );
-      }
-
-      if (resp.status === 405) {
-        throw new Error(
-          "A rota existe, mas não permite o método PUT."
-        );
-      }
-
       throw new Error(
         json.error ||
-        json.message ||
-        `Erro HTTP ${resp.status} ao atualizar usuário.`
+        "Erro ao atualizar perfil."
       );
     }
 
-    alert("✅ Usuário atualizado com sucesso.");
-
-    setStatus(
-      "✅ Usuário atualizado com sucesso.",
-      "success"
+    alert(
+      "✅ Perfil atualizado com sucesso."
     );
 
     limparFormularioUsuario();
+
     await carregarUsuarios();
 
   } catch (err) {
-    console.error("Falha em atualizarUsuario:", err);
 
-    alert("❌ " + err.message);
+    console.error(err);
 
-    setStatus(
-      "❌ Erro ao atualizar usuário: " + err.message,
-      "danger"
+    alert(
+      "❌ " + err.message
     );
+
   }
+
 };
 
 window.excluirUsuario = async function (matricula) {
